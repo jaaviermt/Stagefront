@@ -1,0 +1,40 @@
+import { Router } from "express";
+import { listEvents, getEvent, createEvent } from "../controllers/eventsController.js";
+import { createOrder, getUserOrders } from "../controllers/ordersController.js";
+import { createResale, listResales } from "../controllers/resalesController.js";
+import { getEventReviews, createReview } from "../controllers/reviewsController.js";
+import { getPublicStats } from "../controllers/statsController.js";
+import {
+  getAdminStats,
+  getAdminOrders,
+  getAdminEvents,
+} from "../controllers/adminController.js";
+
+const router = Router();
+
+// Public stats
+router.get("/stats", getPublicStats);
+
+// Events
+router.get("/events", listEvents);
+router.get("/events/:id", getEvent);
+router.post("/events", createEvent);
+
+// Orders
+router.post("/orders", createOrder);
+router.get("/users/:userId/orders", getUserOrders);
+
+// Resales
+router.get("/resales", listResales);
+router.post("/resales", createResale);
+
+// Reviews (MongoDB)
+router.get("/events/:eventId/reviews", getEventReviews);
+router.post("/reviews", createReview);
+
+// Admin (no auth — ver README; proteger en producción)
+router.get("/admin/stats", getAdminStats);
+router.get("/admin/orders", getAdminOrders);
+router.get("/admin/events", getAdminEvents);
+
+export default router;

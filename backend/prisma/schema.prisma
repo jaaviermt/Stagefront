@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  buyer
+  seller
+}
+
+enum EventStatus {
+  draft
+  published
+  cancelled
+  completed
+}
+
+enum SeatStatus {
+  available
+  reserved
+  sold
+}
+
+enum OrderStatus {
+  pending
+  confirmed
+  cancelled
+  refunded
+}
+
+enum ResaleStatus {
+  active
+  sold
+  cancelled
+}
+
+model User {
+  id            String      @id @default(cuid())
+  name          String
+  email         String      @unique
+  password_hash String
+  role          UserRole    @default(buyer)
+  created_at    DateTime    @default(now())
+  orders        Order[]
+  resales       Resale[]
+
+  @@map("users")
+}
+
+model Venue {
+  id       String  @id @default(cuid())
+  name     String
+  city     String
+  address  String
+  capacity Int
+  events   Event[]
+
+  @@map("venues")
+}
+
+model Event {
+  id             String      @id @default(cuid())
+  title          String
+  artist_name    String
+  venue_id       String
+  date           DateTime
+  status         EventStatus @default(draft)
+  total_capacity Int
+  genre          String
+  description    String      @db.Text
+  image_url      String
+  venue          Venue       @relation(fields: [venue_id], references: [id])
+  zones          Zone[]
+  orders         Order[]
+
+  @@map("events")
+}
+
+model Zone {
+  id              String  @id @default(cuid())
+  event_id        String
+  name            String
+  price           Decimal @db.Decimal(10, 2)
+  total_seats     Int
+  available_seats Int
+  event           Event   @relation(fields: [event_id], references: [id])
+  seats           Seat[]
+
+  @@map("zones")
+}
+
+model Seat {
+  id          String      @id @default(cuid())
+  zone_id     String
+  row         String
+  number      Int
+  status      SeatStatus  @default(available)
+  zone        Zone        @relation(fields: [zone_id], references: [id])
+  order_items OrderItem[]
+  resales     Resale[]
+
+  @@map("seats")
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  user_id     String
+  event_id    String
+  total       Decimal     @db.Decimal(10, 2)
+  status      OrderStatus @default(pending)
+  created_at  DateTime    @default(now())
+  user        User        @relation(fields: [user_id], references: [id])
+  event       Event       @relation(fields: [event_id], references: [id])
+  order_items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id       String  @id @default(cuid())
+  order_id String
+  seat_id  String
+  price    Decimal @db.Decimal(10, 2)
+  order    Order   @relation(fields: [order_id], references: [id])
+  seat     Seat    @relation(fields: [seat_id], references: [id])
+
+  @@map("order_items")
+}
+
+model Resale {
+  id        String       @id @default(cuid())
+  seat_id   String
+  seller_id String
+  price     Decimal      @db.Decimal(10, 2)
+  status    ResaleStatus @default(active)
+  seat      Seat         @relation(fields: [seat_id], references: [id])
+  seller    User         @relation(fields: [seller_id], references: [id])
+
+  @@map("resales")
+}
