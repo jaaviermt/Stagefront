@@ -18,6 +18,8 @@ function minZonePrice(event: Event): number {
   return Math.min(...event.zones.map((z) => Number(z.price)));
 }
 
+const PAGE_SIZE = 6;
+
 const EventsPage: FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [filtered, setFiltered] = useState<Event[]>([]);
@@ -25,9 +27,11 @@ const EventsPage: FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("Todas las ciudades");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const gridRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const prevVisibleRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,21 +69,29 @@ const EventsPage: FC = () => {
       );
     }
     setFiltered(result);
+    setVisibleCount(PAGE_SIZE);
+    prevVisibleRef.current = 0;
   }, [search, city, events]);
 
   useEffect(() => {
     if (loading || filtered.length === 0) return;
-    const cards = cardsRef.current.filter(Boolean);
-    if (!cards.length) return;
+    const newCards = cardsRef.current
+      .slice(prevVisibleRef.current)
+      .filter(Boolean) as HTMLDivElement[];
+    prevVisibleRef.current = Math.min(visibleCount, filtered.length);
+    if (!newCards.length) return;
     const ctx = gsap.context(() => {
       gsap.fromTo(
-        cards,
+        newCards,
         { y: 40, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: "power3.out" }
       );
     });
     return () => ctx.revert();
-  }, [loading, filtered]);
+  }, [loading, filtered, visibleCount]);
+
+  const visible = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
 
   return (
     <main className="overflow-x-hidden w-full max-w-full min-h-screen bg-brand-black">
@@ -177,61 +189,78 @@ const EventsPage: FC = () => {
         )}
 
         {/* Grid de eventos */}
-        {!loading && !error && filtered.length > 0 && (
-          <div
-            ref={gridRef}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10"
-          >
-            {filtered.map((event, i) => {
-              const price = minZonePrice(event);
-              const venueLabel = event.venue
-                ? `${event.venue.name}, ${event.venue.city}`
-                : "";
-              return (
-                <div
-                  key={event.id}
-                  ref={(el) => { cardsRef.current[i] = el; }}
-                  className="bg-brand-black group cursor-pointer"
-                >
-                  <Link to={`/events/${event.id}`} className="block">
-                    <div className="relative overflow-hidden aspect-[4/3]">
-                      <img
-                        src={event.image_url ?? "https://picsum.photos/seed/concert/1920/1080"}
-                        alt={event.title}
-                        className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-90 group-hover:scale-105 transition-all duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent" />
-                      {event.genre && (
-                        <span className="absolute top-4 left-4 font-mono text-xs text-brand-gray/70 bg-brand-black/60 px-2 py-1">
-                          {event.genre}
-                        </span>
-                      )}
-                      {price > 0 && (
-                        <span className="absolute bottom-4 right-4 font-display font-bold text-brand-white text-base">
-                          desde {formatMXN(price)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-5">
-                      <h3 className="font-display font-bold text-lg text-brand-white mb-3 group-hover:text-brand-red transition-colors duration-200 leading-tight">
-                        {event.title}
-                      </h3>
-                      <div className="flex flex-col gap-1.5">
-                        <span className="flex items-center gap-2 text-xs text-brand-gray/50">
-                          <MapPin size={11} />
-                          {venueLabel}
-                        </span>
-                        <span className="flex items-center gap-2 text-xs text-brand-gray/50">
-                          <Calendar size={11} />
-                          {formatEventDateShort(event.date)}
-                        </span>
+        {!loading && !error && visible.length > 0 && (
+          <>
+            <div
+              ref={gridRef}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10"
+            >
+              {visible.map((event, i) => {
+                const price = minZonePrice(event);
+                const venueLabel = event.venue
+                  ? `${event.venue.name}, ${event.venue.city}`
+                  : "";
+                return (
+                  <div
+                    key={event.id}
+                    ref={(el) => { cardsRef.current[i] = el; }}
+                    className="bg-brand-black group cursor-pointer"
+                  >
+                    <Link to={`/events/${event.id}`} className="block">
+                      <div className="relative overflow-hidden aspect-[4/3]">
+                        <img
+                          src={event.image_url ?? "https://picsum.photos/seed/concert/1920/1080"}
+                          alt={event.title}
+                          className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-90 group-hover:scale-105 transition-all duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent" />
+                        {event.genre && (
+                          <span className="absolute top-4 left-4 font-mono text-xs text-brand-gray/70 bg-brand-black/60 px-2 py-1">
+                            {event.genre}
+                          </span>
+                        )}
+                        {price > 0 && (
+                          <span className="absolute bottom-4 right-4 font-display font-bold text-brand-white text-base">
+                            desde {formatMXN(price)}
+                          </span>
+                        )}
                       </div>
-                    </div>
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
+                      <div className="p-5">
+                        <h3 className="font-display font-bold text-lg text-brand-white mb-3 group-hover:text-brand-red transition-colors duration-200 leading-tight">
+                          {event.title}
+                        </h3>
+                        <div className="flex flex-col gap-1.5">
+                          <span className="flex items-center gap-2 text-xs text-brand-gray/50">
+                            <MapPin size={11} />
+                            {venueLabel}
+                          </span>
+                          <span className="flex items-center gap-2 text-xs text-brand-gray/50">
+                            <Calendar size={11} />
+                            {formatEventDateShort(event.date)}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Ver más */}
+            {hasMore && (
+              <div className="flex flex-col items-center gap-3 mt-12">
+                <p className="font-mono text-xs text-brand-gray/30">
+                  Mostrando {visible.length} de {filtered.length}
+                </p>
+                <button
+                  onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                  className="border border-white/20 text-brand-white text-sm font-mono px-10 py-3 hover:border-brand-red hover:text-brand-red transition-colors duration-200 cursor-pointer"
+                >
+                  Ver más eventos
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>

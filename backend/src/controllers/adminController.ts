@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import type { EventStatus, OrderStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { isEventSoldOut } from "../services/eventService.js";
 
@@ -44,7 +45,7 @@ export async function getAdminStats(_req: Request, res: Response): Promise<void>
 
 export async function getAdminOrders(_req: Request, res: Response): Promise<void> {
   try {
-    const limit = Math.min(Number(_req.query.limit) || 10, 50);
+    const limit = Math.min(Number(_req.query.limit) || 10, 200);
     const orders = await prisma.order.findMany({
       take: limit,
       include: {
@@ -101,5 +102,148 @@ export async function getAdminEvents(_req: Request, res: Response): Promise<void
     });
   } catch {
     res.status(500).json({ error: "Failed to fetch admin events" });
+  }
+}
+
+export async function getAdminVenues(_req: Request, res: Response): Promise<void> {
+  try {
+    const venues = await prisma.venue.findMany({ orderBy: { name: "asc" } });
+    res.json({ data: venues });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch venues" });
+  }
+}
+
+export async function getAllAdminEvents(_req: Request, res: Response): Promise<void> {
+  try {
+    const events = await prisma.event.findMany({
+      include: { venue: true, zones: true },
+      orderBy: { date: "asc" },
+    });
+    res.json({
+      data: events.map((e) => {
+        const sold = e.zones.reduce((acc, z) => acc + (z.total_seats - z.available_seats), 0);
+        const capacity = e.zones.reduce((acc, z) => acc + z.total_seats, 0);
+        return {
+          id: e.id,
+          title: e.title,
+          artist_name: e.artist_name,
+          venue: `${e.venue.name}, ${e.venue.city}`,
+          venue_id: e.venue_id,
+          date: e.date,
+          status: e.status,
+          genre: e.genre,
+          description: e.description,
+          image_url: e.image_url,
+          sold,
+          capacity,
+          total_capacity: e.total_capacity,
+        };
+      }),
+    });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch all events" });
+  }
+}
+
+export async function createAdminEvent(req: Request, res: Response): Promise<void> {
+  try {
+    const { title, artist_name, venue_id, date, total_capacity, genre, description, image_url, status } =
+      req.body as {
+        title: string;
+        artist_name: string;
+        venue_id: string;
+        date: string;
+        total_capacity: number;
+        genre: string;
+        description: string;
+        image_url?: string;
+        status?: string;
+      };
+    const event = await prisma.event.create({
+      data: {
+        title,
+        artist_name,
+        venue_id,
+        date: new Date(date),
+        total_capacity: Number(total_capacity),
+        genre,
+        description,
+        image_url: image_url ?? "",
+        status: (status as EventStatus) ?? "draft",
+      },
+    });
+    res.status(201).json({ data: event });
+  } catch {
+    res.status(500).json({ error: "Failed to create event" });
+  }
+}
+
+export async function updateAdminEvent(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const body = req.body as Partial<{
+      title: string;
+      artist_name: string;
+      status: string;
+      date: string;
+      total_capacity: number;
+      genre: string;
+      description: string;
+      image_url: string;
+    }>;
+    const data: Record<string, unknown> = {};
+    if (body.title !== undefined) data.title = body.title;
+    if (body.artist_name !== undefined) data.artist_name = body.artist_name;
+    if (body.status !== undefined) data.status = body.status as EventStatus;
+    if (body.date !== undefined) data.date = new Date(body.date);
+    if (body.total_capacity !== undefined) data.total_capacity = Number(body.total_capacity);
+    if (body.genre !== undefined) data.genre = body.genre;
+    if (body.description !== undefined) data.description = body.description;
+    if (body.image_url !== undefined) data.image_url = body.image_url;
+    const event = await prisma.event.update({ where: { id }, data });
+    res.json({ data: event });
+  } catch {
+    res.status(500).json({ error: "Failed to update event" });
+  }
+}
+
+export async function deleteAdminEvent(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    await prisma.resale.deleteMany({ where: { seat: { zone: { event_id: id } } } });
+    await prisma.orderItem.deleteMany({ where: { seat: { zone: { event_id: id } } } });
+    await prisma.order.deleteMany({ where: { event_id: id } });
+    await prisma.seat.deleteMany({ where: { zone: { event_id: id } } });
+    await prisma.zone.deleteMany({ where: { event_id: id } });
+    await prisma.event.delete({ where: { id } });
+    res.json({ data: { deleted: true } });
+  } catch {
+    res.status(500).json({ error: "Failed to delete event" });
+  }
+}
+
+export async function updateAdminOrder(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const { status } = req.body as { status: string };
+    const order = await prisma.order.update({
+      where: { id },
+      data: { status: status as OrderStatus },
+    });
+    res.json({ data: order });
+  } catch {
+    res.status(500).json({ error: "Failed to update order" });
+  }
+}
+
+export async function deleteAdminOrder(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    await prisma.orderItem.deleteMany({ where: { order_id: id } });
+    await prisma.order.delete({ where: { id } });
+    res.json({ data: { deleted: true } });
+  } catch {
+    res.status(500).json({ error: "Failed to delete order" });
   }
 }

@@ -16,12 +16,25 @@ export const SEED_IDS = {
   venuePalacio: "seed-venue-palacio",
   venueArenaVfg: "seed-venue-arena-vfg",
   venueForoSol: "seed-venue-foro-sol",
+  venueArenaMonterrey: "seed-venue-arena-monterrey",
+  venueCCUPuebla: "seed-venue-ccu-puebla",
+  venueCorregidora: "seed-venue-corregidora",
+  venuePoliforumZamna: "seed-venue-poliforum-zamna",
+  venueCaliente: "seed-venue-caliente",
+  venuePoliforumLeon: "seed-venue-poliforum-leon",
   eventRosalia: "seed-event-rosalia",
   eventFkaTwigs: "seed-event-fka-twigs",
   eventCtangana: "seed-event-ctangana",
   eventWeeknd: "seed-event-weeknd",
   eventAxeCeremonia: "seed-event-axe-ceremonia",
   eventKanye: "seed-event-kanye",
+  eventBryantBarnes: "seed-event-bryant-barnes",
+  eventNinajirachi: "seed-event-ninajirachi",
+  eventJpegmafia: "seed-event-jpegmafia",
+  eventTheStrokes: "seed-event-the-strokes",
+  eventJamesBlake: "seed-event-james-blake",
+  eventKendrickLamar: "seed-event-kendrick-lamar",
+  eventGorillaz: "seed-event-gorillaz",
 } as const;
 
 async function createSeatsForZone(
@@ -122,19 +135,51 @@ async function seedPostgres(): Promise<void> {
         address: "Av. Río Churubusco, Ciudad Deportiva Magdalena Mixhuca",
         capacity: 65000,
       },
+      {
+        id: SEED_IDS.venueArenaMonterrey,
+        name: "Arena Monterrey",
+        city: "Monterrey",
+        address: "Av. Francisco I. Madero 2900, Monterrey, N.L.",
+        capacity: 18000,
+      },
+      {
+        id: SEED_IDS.venueCCUPuebla,
+        name: "Complejo Cultural Universitario",
+        city: "Puebla",
+        address: "Av. Universidad s/n, San Manuel, Puebla",
+        capacity: 15000,
+      },
+      {
+        id: SEED_IDS.venueCorregidora,
+        name: "Estadio Corregidora",
+        city: "Querétaro",
+        address: "Av. de las Artes s/n, Centro Histórico, Querétaro",
+        capacity: 33000,
+      },
+      {
+        id: SEED_IDS.venuePoliforumZamna,
+        name: "Poliforum Zamna",
+        city: "Mérida",
+        address: "Carr. Mérida-Progreso Km 6, Mérida, Yuc.",
+        capacity: 20000,
+      },
+      {
+        id: SEED_IDS.venueCaliente,
+        name: "Estadio Caliente",
+        city: "Tijuana",
+        address: "Blvd. Agua Caliente 12027, Tijuana, B.C.",
+        capacity: 32000,
+      },
+      {
+        id: SEED_IDS.venuePoliforumLeon,
+        name: "Poliforum León",
+        city: "León",
+        address: "Blvd. Torres Landa 1929, León, Gto.",
+        capacity: 10000,
+      },
     ],
   });
 
-  // ─── IMPORTANTE: image_url ────────────────────────────────────────────────
-  // Para usar imágenes reales, coloca los archivos en:
-  //   frontend/public/images/<nombre>.jpg
-  // y cambia el valor de image_url a "/images/<nombre>.jpg"
-  //
-  // Ejemplo:
-  //   image_url: "/images/rosalia.jpg"
-  //
-  // Por ahora se usan placeholders de picsum.photos.
-  // ─────────────────────────────────────────────────────────────────────────
   const events = [
     {
       id: SEED_IDS.eventRosalia,
@@ -214,6 +259,97 @@ async function seedPostgres(): Promise<void> {
         "El evento más esperado de la década. Kanye West se presenta por primera vez en México en el Estadio GNP Seguros con Ye Live: una experiencia audiovisual masiva que redefine el concepto de show en vivo.",
       image_url: "/images/kanyewest.jpg",
     },
+    {
+      id: SEED_IDS.eventBryantBarnes,
+      title: "Bryant Barnes — Closer to Midnight",
+      artist_name: "Bryant Barnes",
+      venue_id: SEED_IDS.venueArenaMonterrey,
+      date: new Date("2026-10-11T21:00:00-06:00"),
+      status: "published" as const,
+      total_capacity: 14000,
+      genre: "R&B / Soul",
+      description:
+        "Bryant Barnes debuta en México con su gira Closer to Midnight. El cantante y productor californiano lleva su sonido de R&B contemporáneo al norte del país en la Arena Monterrey.",
+      image_url: "/images/bryantbarnes.avif",
+    },
+    {
+      id: SEED_IDS.eventNinajirachi,
+      title: "Ninajirachi — Wishing Well Tour",
+      artist_name: "Ninajirachi",
+      venue_id: SEED_IDS.venueArenaVfg,
+      date: new Date("2026-11-08T22:00:00-06:00"),
+      status: "published" as const,
+      total_capacity: 8000,
+      genre: "Electrónica / Hyperpop",
+      description:
+        "La productora australiana Ninajirachi llega a Guadalajara con Wishing Well Tour. Sus sets electrónicos y hyperpop toman la Arena VFG para una noche de baile sin parar.",
+      image_url: "/images/ninajirachi.avif",
+    },
+    {
+      id: SEED_IDS.eventJpegmafia,
+      title: "JPEGMAFIA — Scaring The Hoes World Tour",
+      artist_name: "JPEGMAFIA",
+      venue_id: SEED_IDS.venueCaliente,
+      date: new Date("2026-09-19T21:30:00-06:00"),
+      status: "published" as const,
+      total_capacity: 10000,
+      genre: "Experimental Hip-Hop",
+      description:
+        "JPEGMAFIA lleva su caos organizado a Tijuana. El rapper y productor de Baltimore presenta Scaring The Hoes World Tour en el Estadio Caliente con uno de los shows más intensos del rap alternativo.",
+      image_url: "/images/jpegmafia.jpg",
+    },
+    {
+      id: SEED_IDS.eventTheStrokes,
+      title: "The Strokes — Is This It Again? Tour",
+      artist_name: "The Strokes",
+      venue_id: SEED_IDS.venueCCUPuebla,
+      date: new Date("2026-10-24T21:00:00-06:00"),
+      status: "published" as const,
+      total_capacity: 12000,
+      genre: "Rock / Indie",
+      description:
+        "The Strokes regresan a México con Is This It Again? Tour. Los neoyorkinos tocan en Puebla en el CCU con sus clásicos de Is This It y Room on Fire junto a material nuevo.",
+      image_url: "/images/thestrokes.jpeg",
+    },
+    {
+      id: SEED_IDS.eventJamesBlake,
+      title: "James Blake — Playing Robots Into Heaven Tour",
+      artist_name: "James Blake",
+      venue_id: SEED_IDS.venueCorregidora,
+      date: new Date("2026-11-22T21:00:00-06:00"),
+      status: "published" as const,
+      total_capacity: 8000,
+      genre: "Electronic Soul / Post-Dubstep",
+      description:
+        "James Blake presenta Playing Robots Into Heaven Tour en Querétaro. El productor y cantante británico lleva su más reciente álbum de clubes y electrónica al Estadio Corregidora en una noche íntima e intensa.",
+      image_url: "/images/jamesblake.jpg",
+    },
+    {
+      id: SEED_IDS.eventKendrickLamar,
+      title: "Kendrick Lamar — Grand National Tour",
+      artist_name: "Kendrick Lamar",
+      venue_id: SEED_IDS.venuePoliforumLeon,
+      date: new Date("2027-01-30T21:00:00-06:00"),
+      status: "published" as const,
+      total_capacity: 10000,
+      genre: "Hip-Hop / Rap",
+      description:
+        "Kendrick Lamar trae el Grand National Tour a León. El rapero de Compton, ganador del Pulitzer, lleva GNX y su catálogo completo al Poliforum León en una noche histórica para el hip-hop en México.",
+      image_url: "/images/kendricklamar.jpg",
+    },
+    {
+      id: SEED_IDS.eventGorillaz,
+      title: "Gorillaz — Cracker Island Tour",
+      artist_name: "Gorillaz",
+      venue_id: SEED_IDS.venuePoliforumZamna,
+      date: new Date("2026-12-05T20:30:00-06:00"),
+      status: "published" as const,
+      total_capacity: 18000,
+      genre: "Alternative / Electronic",
+      description:
+        "Gorillaz desembarcan en Mérida con Cracker Island Tour. La banda virtual de Damon Albarn presenta su show multimedia en el Poliforum Zamna con invitados especiales y una puesta en escena inigualable.",
+      image_url: "/images/gorillaz.jpg",
+    },
   ];
 
   await prisma.event.createMany({ data: events });
@@ -252,6 +388,43 @@ async function seedPostgres(): Promise<void> {
     { id: "zone-kw-vip",     event_id: SEED_IDS.eventKanye, name: "VIP",           price: 7000, total_seats: 100, available_seats: 42 },
     { id: "zone-kw-palco",   event_id: SEED_IDS.eventKanye, name: "Palco Premium", price: 12000, total_seats: 40, available_seats: 8  },
     { id: "zone-kw-tribuna", event_id: SEED_IDS.eventKanye, name: "Tribuna",       price: 1600, total_seats: 400, available_seats: 295 },
+
+    // Bryant Barnes — Arena Monterrey
+    { id: "zone-bb-general", event_id: SEED_IDS.eventBryantBarnes, name: "Pista General", price: 950,  total_seats: 150, available_seats: 110 },
+    { id: "zone-bb-vip",     event_id: SEED_IDS.eventBryantBarnes, name: "VIP",           price: 2400, total_seats: 60,  available_seats: 35 },
+    { id: "zone-bb-tribuna", event_id: SEED_IDS.eventBryantBarnes, name: "Tribuna",       price: 650,  total_seats: 200, available_seats: 162 },
+
+    // Ninajirachi — Arena VFG
+    { id: "zone-nj-general", event_id: SEED_IDS.eventNinajirachi, name: "Pista",    price: 800,  total_seats: 200, available_seats: 155 },
+    { id: "zone-nj-vip",     event_id: SEED_IDS.eventNinajirachi, name: "VIP",      price: 1800, total_seats: 80,  available_seats: 48 },
+    { id: "zone-nj-premium", event_id: SEED_IDS.eventNinajirachi, name: "Premium",  price: 3200, total_seats: 40,  available_seats: 21 },
+
+    // JPEGMAFIA — Estadio Caliente
+    { id: "zone-jp-general", event_id: SEED_IDS.eventJpegmafia, name: "Pista General", price: 750,  total_seats: 180, available_seats: 130 },
+    { id: "zone-jp-vip",     event_id: SEED_IDS.eventJpegmafia, name: "VIP",           price: 1900, total_seats: 60,  available_seats: 29 },
+    { id: "zone-jp-tribuna", event_id: SEED_IDS.eventJpegmafia, name: "Tribuna",       price: 500,  total_seats: 220, available_seats: 178 },
+
+    // The Strokes — CCU Puebla
+    { id: "zone-ts-general", event_id: SEED_IDS.eventTheStrokes, name: "Pista General", price: 1100, total_seats: 160, available_seats: 98 },
+    { id: "zone-ts-vip",     event_id: SEED_IDS.eventTheStrokes, name: "VIP",           price: 2800, total_seats: 70,  available_seats: 33 },
+    { id: "zone-ts-tribuna", event_id: SEED_IDS.eventTheStrokes, name: "Tribuna",       price: 750,  total_seats: 250, available_seats: 195 },
+
+    // James Blake — Estadio Corregidora
+    { id: "zone-jb-general", event_id: SEED_IDS.eventJamesBlake, name: "Pista",    price: 900,  total_seats: 120, available_seats: 88 },
+    { id: "zone-jb-vip",     event_id: SEED_IDS.eventJamesBlake, name: "VIP",      price: 2200, total_seats: 50,  available_seats: 22 },
+    { id: "zone-jb-tribuna", event_id: SEED_IDS.eventJamesBlake, name: "Tribuna",  price: 600,  total_seats: 180, available_seats: 145 },
+
+    // Kendrick Lamar — Poliforum León
+    { id: "zone-kl-general", event_id: SEED_IDS.eventKendrickLamar, name: "Pista General", price: 1800, total_seats: 200, available_seats: 78 },
+    { id: "zone-kl-vip",     event_id: SEED_IDS.eventKendrickLamar, name: "VIP",           price: 4500, total_seats: 80,  available_seats: 12 },
+    { id: "zone-kl-palco",   event_id: SEED_IDS.eventKendrickLamar, name: "Palco Premium", price: 8000, total_seats: 30,  available_seats: 3  },
+    { id: "zone-kl-tribuna", event_id: SEED_IDS.eventKendrickLamar, name: "Tribuna",       price: 1100, total_seats: 300, available_seats: 215 },
+
+    // Gorillaz — Poliforum Zamna
+    { id: "zone-go-general", event_id: SEED_IDS.eventGorillaz, name: "Zona General", price: 1300, total_seats: 250, available_seats: 172 },
+    { id: "zone-go-vip",     event_id: SEED_IDS.eventGorillaz, name: "VIP",          price: 3200, total_seats: 100, available_seats: 44 },
+    { id: "zone-go-ultra",   event_id: SEED_IDS.eventGorillaz, name: "Ultra VIP",    price: 5500, total_seats: 40,  available_seats: 11 },
+    { id: "zone-go-tribuna", event_id: SEED_IDS.eventGorillaz, name: "Tribuna",      price: 850,  total_seats: 300, available_seats: 238 },
   ];
 
   await prisma.zone.createMany({ data: zones });
@@ -284,6 +457,36 @@ async function seedPostgres(): Promise<void> {
   await createSeatsForZone("zone-kw-vip",     ["V1", "V2"],                   50, 58);
   await createSeatsForZone("zone-kw-palco",   ["P1"],                         40, 32);
   await createSeatsForZone("zone-kw-tribuna", ["T1", "T2", "T3", "T4"],      100, 105);
+
+  await createSeatsForZone("zone-bb-general", ["A", "B", "C"], 50, 40);
+  await createSeatsForZone("zone-bb-vip",     ["V1"],          60, 25);
+  await createSeatsForZone("zone-bb-tribuna", ["T1", "T2"],   100, 38);
+
+  await createSeatsForZone("zone-nj-general", ["A", "B", "C", "D"], 50, 45);
+  await createSeatsForZone("zone-nj-vip",     ["V1", "V2"],          40, 32);
+  await createSeatsForZone("zone-nj-premium", ["P1"],                40, 19);
+
+  await createSeatsForZone("zone-jp-general", ["A", "B", "C"], 60, 50);
+  await createSeatsForZone("zone-jp-vip",     ["V1"],           60, 31);
+  await createSeatsForZone("zone-jp-tribuna", ["T1", "T2", "T3"], 74, 42);
+
+  await createSeatsForZone("zone-ts-general", ["A", "B", "C", "D"], 40, 62);
+  await createSeatsForZone("zone-ts-vip",     ["V1", "V2"],          35, 37);
+  await createSeatsForZone("zone-ts-tribuna", ["T1", "T2", "T3"],    83, 55);
+
+  await createSeatsForZone("zone-jb-general", ["A", "B", "C"], 40, 32);
+  await createSeatsForZone("zone-jb-vip",     ["V1"],           50, 28);
+  await createSeatsForZone("zone-jb-tribuna", ["T1", "T2", "T3"], 60, 35);
+
+  await createSeatsForZone("zone-kl-general", ["A", "B", "C", "D"], 50, 122);
+  await createSeatsForZone("zone-kl-vip",     ["V1", "V2"],          40, 68);
+  await createSeatsForZone("zone-kl-palco",   ["P1"],                30, 27);
+  await createSeatsForZone("zone-kl-tribuna", ["T1", "T2", "T3"],   100, 85);
+
+  await createSeatsForZone("zone-go-general", ["A", "B", "C", "D", "E"], 50, 78);
+  await createSeatsForZone("zone-go-vip",     ["V1", "V2"],               50, 56);
+  await createSeatsForZone("zone-go-ultra",   ["U1"],                     40, 29);
+  await createSeatsForZone("zone-go-tribuna", ["T1", "T2", "T3"],        100, 62);
 
   // Sample order
   const soldSeat = await prisma.seat.findFirst({
@@ -336,6 +539,31 @@ async function seedPostgres(): Promise<void> {
         },
       });
     }
+  }
+
+  const gorillazSeat = await prisma.seat.findFirst({
+    where: { zone_id: "zone-go-vip", status: "sold" },
+  });
+
+  if (gorillazSeat) {
+    await prisma.order.create({
+      data: {
+        user_id: SEED_IDS.userSeller,
+        event_id: SEED_IDS.eventGorillaz,
+        total: 3200,
+        status: "confirmed",
+        order_items: { create: { seat_id: gorillazSeat.id, price: 3200 } },
+      },
+    });
+
+    await prisma.resale.create({
+      data: {
+        seat_id: gorillazSeat.id,
+        seller_id: SEED_IDS.userSeller,
+        price: 4100,
+        status: "active",
+      },
+    });
   }
 }
 
@@ -391,6 +619,55 @@ async function seedMongo(): Promise<void> {
       genres: ["Festival", "Alternativo", "Electrónica", "Urbano", "Pop"],
       social_links: { instagram: "@axeceremonia", twitter: "@AxeCeremonia" },
       media: ["https://picsum.photos/seed/axe-ceremonia/800/800"],
+    },
+    {
+      name: "Bryant Barnes",
+      bio: "Cantante y productor de R&B contemporáneo originario de Los Ángeles. Su sonido mezcla soul clásico con producción moderna y letras introspectivas que lo han posicionado como una de las voces más prometedoras de su generación.",
+      genres: ["R&B", "Soul", "Neo-Soul"],
+      social_links: { instagram: "@bryantbarnes", spotify: "Bryant Barnes" },
+      media: ["https://picsum.photos/seed/artist-bryantbarnes/800/800"],
+    },
+    {
+      name: "Ninajirachi",
+      bio: "Productora y DJ australiana especializada en electrónica y hyperpop. Conocida por sus sets de alta energía y producciones que mezclan dance pop con elementos experimentales. Uno de los talentos más frescos de la escena electrónica mundial.",
+      genres: ["Electrónica", "Hyperpop", "Dance", "Club"],
+      social_links: { instagram: "@ninajirachi", spotify: "Ninajirachi" },
+      media: ["https://picsum.photos/seed/artist-ninajirachi/800/800"],
+    },
+    {
+      name: "JPEGMAFIA",
+      bio: "Rapper y productor de Baltimore reconocido por su estilo experimental e irreverente. Sus álbumes Veteran y Scaring The Hoes lo consolidaron como una figura clave del hip-hop alternativo global.",
+      genres: ["Experimental Hip-Hop", "Noise Rap", "Industrial"],
+      social_links: { instagram: "@jpegmafia", spotify: "JPEGMAFIA" },
+      media: ["https://picsum.photos/seed/artist-jpegmafia/800/800"],
+    },
+    {
+      name: "The Strokes",
+      bio: "Banda de rock indie neoyorkina formada en 1998. Su álbum debut Is This It (2001) redefinió el rock del siglo XXI. Iconos indiscutibles del indie rock con una discografía que abarca más de dos décadas de influencia global.",
+      genres: ["Indie Rock", "Post-Punk Revival", "Alternative Rock"],
+      social_links: { instagram: "@thestrokes", spotify: "The Strokes" },
+      media: ["https://picsum.photos/seed/artist-thestrokes/800/800"],
+    },
+    {
+      name: "James Blake",
+      bio: "Productor y cantante británico pionero del post-dubstep y la electrónica introspectiva. Con álbumes como James Blake, Overgrown y Playing Robots Into Heaven ha redefinido las fronteras entre el pop, el soul y la música electrónica.",
+      genres: ["Electronic Soul", "Post-Dubstep", "Art Pop", "Ambient"],
+      social_links: { instagram: "@jamesblake", spotify: "James Blake" },
+      media: ["https://picsum.photos/seed/artist-jamesblake/800/800"],
+    },
+    {
+      name: "Kendrick Lamar",
+      bio: "Rapper de Compton, California, considerado uno de los mayores poetas del hip-hop contemporáneo. Ganador del Premio Pulitzer por DAMN. (2018), su álbum GNX y su actuación en el Super Bowl LIX lo reafirmaron como la voz más importante del rap actual.",
+      genres: ["Hip-Hop", "Rap", "Conscious Rap", "West Coast"],
+      social_links: { instagram: "@kendricklamar", spotify: "Kendrick Lamar" },
+      media: ["https://picsum.photos/seed/artist-kendricklamar/800/800"],
+    },
+    {
+      name: "Gorillaz",
+      bio: "Banda virtual creada por Damon Albarn y Jamie Hewlett en 1998. Sus shows en vivo combinan actuaciones en pantalla de sus personajes animados con músicos reales e invitados especiales. Cracker Island es su álbum más reciente.",
+      genres: ["Alternative", "Electronic", "Trip-Hop", "Britpop"],
+      social_links: { instagram: "@gorillaz", spotify: "Gorillaz" },
+      media: ["https://picsum.photos/seed/artist-gorillaz/800/800"],
     },
   ]);
 

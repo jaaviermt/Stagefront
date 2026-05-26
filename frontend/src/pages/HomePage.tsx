@@ -62,11 +62,13 @@ const HomePage: FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState("Todas");
+  const [visibleHomeCount, setVisibleHomeCount] = useState(6);
 
   const heroRef = useRef<HTMLDivElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const eventsRef = useRef<HTMLDivElement>(null);
   const eventCardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const prevHomeVisibleRef = useRef(6);
   const marqueeRef = useRef<HTMLDivElement>(null);
   const whyItemsRef = useRef<(HTMLDivElement | null)[]>([]);
   const ctaTextRef = useRef<HTMLParagraphElement>(null);
@@ -230,10 +232,29 @@ const HomePage: FC = () => {
     return () => ctx.revert();
   }, [loading]);
 
+  // Animate only newly revealed cards when clicking "Ver más"
+  useEffect(() => {
+    if (loading) return;
+    const prev = prevHomeVisibleRef.current;
+    if (visibleHomeCount <= prev) return;
+    const newCards = eventCardsRef.current.slice(prev).filter(Boolean) as HTMLDivElement[];
+    prevHomeVisibleRef.current = visibleHomeCount;
+    if (!newCards.length) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    gsap.fromTo(
+      newCards,
+      { y: 40, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: "power3.out" }
+    );
+  }, [loading, visibleHomeCount]);
+
   const filteredEvents =
     selectedCity === "Todas"
       ? events
       : events.filter((e) => e.venue?.city === selectedCity);
+
+  const visibleEvents = filteredEvents.slice(0, visibleHomeCount);
+  const hasMoreHomeEvents = visibleHomeCount < filteredEvents.length;
 
   return (
     <main className="overflow-x-hidden w-full max-w-full">
@@ -253,7 +274,7 @@ const HomePage: FC = () => {
 
         <div className="relative z-10 text-center px-6 max-w-6xl mx-auto w-full">
           <p className="text-brand-red font-mono text-xs tracking-[0.3em] uppercase mb-6">
-            Boletos en vivo · México
+            Boletos en vivo
           </p>
           <h1
             className="font-display font-extrabold text-brand-white leading-[0.95] tracking-tight mb-8 w-full"
@@ -371,7 +392,11 @@ const HomePage: FC = () => {
               {MEXICO_CITIES.map((city) => (
                 <button
                   key={city}
-                  onClick={() => setSelectedCity(city)}
+                  onClick={() => {
+                    setSelectedCity(city);
+                    setVisibleHomeCount(6);
+                    prevHomeVisibleRef.current = 6;
+                  }}
                   className={`px-4 py-2 text-xs font-mono transition-all duration-200 cursor-pointer ${
                     selectedCity === city
                       ? "bg-brand-white text-brand-black"
@@ -403,7 +428,7 @@ const HomePage: FC = () => {
 
           {!loading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/10">
-              {filteredEvents.map((event, i) => {
+              {visibleEvents.map((event, i) => {
                 const price = minZonePrice(event);
                 const venueLabel = event.venue
                   ? `${event.venue.name}, ${event.venue.city}`
@@ -457,6 +482,20 @@ const HomePage: FC = () => {
                   Sin eventos disponibles en {selectedCity}.
                 </div>
               )}
+            </div>
+          )}
+
+          {!loading && !error && hasMoreHomeEvents && (
+            <div className="flex flex-col items-center gap-3 mt-12">
+              <p className="font-mono text-xs text-brand-gray/30">
+                Mostrando {visibleEvents.length} de {filteredEvents.length}
+              </p>
+              <button
+                onClick={() => setVisibleHomeCount((c) => c + 6)}
+                className="border border-white/20 text-brand-white text-sm font-mono px-10 py-3 hover:border-brand-red hover:text-brand-red transition-colors duration-200 cursor-pointer"
+              >
+                Ver más eventos
+              </button>
             </div>
           )}
         </div>

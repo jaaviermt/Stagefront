@@ -93,6 +93,42 @@ export interface AdminEventRow {
   revenue: number;
 }
 
+export interface AdminEventFull {
+  id: string;
+  title: string;
+  artist_name: string;
+  venue: string;
+  venue_id: string;
+  date: string;
+  status: string;
+  genre: string;
+  description: string;
+  image_url: string;
+  sold: number;
+  capacity: number;
+  total_capacity: number;
+}
+
+export interface AdminVenue {
+  id: string;
+  name: string;
+  city: string;
+  address: string;
+  capacity: number;
+}
+
+export interface CreateEventPayload {
+  title: string;
+  artist_name: string;
+  venue_id: string;
+  date: string;
+  total_capacity: number;
+  genre: string;
+  description: string;
+  image_url?: string;
+  status?: string;
+}
+
 export interface CreateOrderPayload {
   user_id: string;
   event_id: string;
@@ -147,4 +183,48 @@ export function createOrder(payload: CreateOrderPayload): Promise<CreatedOrder> 
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function fetchAdminVenues(): Promise<AdminVenue[]> {
+  return request<AdminVenue[]>("/admin/venues");
+}
+
+export function fetchAllAdminEvents(): Promise<AdminEventFull[]> {
+  return request<AdminEventFull[]>("/admin/events/all");
+}
+
+export function fetchAllAdminOrders(): Promise<AdminOrder[]> {
+  return request<AdminOrder[]>("/admin/orders?limit=200");
+}
+
+export function createAdminEvent(payload: CreateEventPayload): Promise<AdminEventFull> {
+  return request<AdminEventFull>("/admin/events", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateAdminEvent(
+  id: string,
+  payload: Partial<CreateEventPayload & { status: string }>
+): Promise<AdminEventFull> {
+  return request<AdminEventFull>(`/admin/events/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteAdminEvent(id: string): Promise<void> {
+  return request<void>(`/admin/events/${id}`, { method: "DELETE" });
+}
+
+export function updateAdminOrder(id: string, status: string): Promise<void> {
+  return request<void>(`/admin/orders/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export function deleteAdminOrder(id: string): Promise<void> {
+  return request<void>(`/admin/orders/${id}`, { method: "DELETE" });
 }

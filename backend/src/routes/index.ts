@@ -8,6 +8,13 @@ import {
   getAdminStats,
   getAdminOrders,
   getAdminEvents,
+  getAdminVenues,
+  getAllAdminEvents,
+  createAdminEvent,
+  updateAdminEvent,
+  deleteAdminEvent,
+  updateAdminOrder,
+  deleteAdminOrder,
 } from "../controllers/adminController.js";
 
 const router = Router();
@@ -32,9 +39,16 @@ router.post("/resales", createResale);
 router.get("/events/:eventId/reviews", getEventReviews);
 router.post("/reviews", createReview);
 
-// Admin (no auth — ver README; proteger en producción)
+// Admin (no auth — proteger en producción)
 router.get("/admin/stats", getAdminStats);
 router.get("/admin/orders", getAdminOrders);
 router.get("/admin/events", getAdminEvents);
+router.get("/admin/events/all", getAllAdminEvents);
+router.get("/admin/venues", getAdminVenues);
+router.post("/admin/events", createAdminEvent);
+router.patch("/admin/events/:id", updateAdminEvent);
+router.delete("/admin/events/:id", deleteAdminEvent);
+router.patch("/admin/orders/:id", updateAdminOrder);
+router.delete("/admin/orders/:id", deleteAdminOrder);
 
 export default router;
