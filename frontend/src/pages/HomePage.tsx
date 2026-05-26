@@ -11,6 +11,7 @@ import type { Event } from "../types/index.js";
 gsap.registerPlugin(ScrollTrigger);
 
 const MEXICO_CITIES = [
+  "Todas",
   "Ciudad de México",
   "Guadalajara",
   "Monterrey",
@@ -19,6 +20,29 @@ const MEXICO_CITIES = [
   "Mérida",
   "Tijuana",
   "León",
+];
+
+const WHY_ITEMS = [
+  {
+    title: "Sin comisiones ocultas",
+    desc: "El precio que ves es el que pagas. Sin cargos de servicio de último momento.",
+    img: "/images/dolarucos.jpg",
+  },
+  {
+    title: "Reventa con límite justo",
+    desc: "Los revendedores no pueden subir el precio más del 30% sobre el original.",
+    img: "/images/tickets.jpg",
+  },
+  {
+    title: "Eventos verificados",
+    desc: "Todos los eventos pasan por revisión antes de publicarse en la plataforma.",
+    img: "/images/kendric.jpeg",
+  },
+  {
+    title: "Boletos garantizados",
+    desc: "Cada compra está asegurada. Si el evento se cancela, te devolvemos tu dinero.",
+    img: "/images/stagebeyy.jpg",
+  },
 ];
 
 function minZonePrice(event: Event): number {
@@ -34,20 +58,21 @@ const HomePage: FC = () => {
     ticketsSold: number;
     satisfaction: number;
     cities: number;
-    hiddenFees: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState("Todas");
 
   const heroRef = useRef<HTMLDivElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const eventsRef = useRef<HTMLDivElement>(null);
   const eventCardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const marqueeRef = useRef<HTMLDivElement>(null);
+  const whyItemsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const ctaTextRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     let cancelled = false;
-
     async function load(): Promise<void> {
       try {
         const [eventsData, statsData, resalesData] = await Promise.all([
@@ -72,15 +97,16 @@ const HomePage: FC = () => {
         if (!cancelled) setLoading(false);
       }
     }
-
     void load();
     return () => {
       cancelled = true;
     };
   }, []);
 
+  // Hero GSAP — independent of API data
   useEffect(() => {
-    if (loading || events.length === 0) return;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
 
     const ctx = gsap.context(() => {
       if (heroImgRef.current) {
@@ -98,8 +124,30 @@ const HomePage: FC = () => {
             },
           }
         );
+        gsap.to(heroImgRef.current, {
+          opacity: 0.2,
+          ease: "none",
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: "60% top",
+            end: "bottom top",
+            scrub: 1,
+          },
+        });
       }
+    });
 
+    return () => ctx.revert();
+  }, []);
+
+  // Data-dependent GSAP
+  useEffect(() => {
+    if (loading) return;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
+    const ctx = gsap.context(() => {
+      // Event cards stagger
       const cards = eventCardsRef.current.filter(Boolean);
       if (cards.length > 0) {
         gsap.fromTo(
@@ -119,34 +167,77 @@ const HomePage: FC = () => {
         );
       }
 
+      // Marquee
       if (marqueeRef.current) {
         const inner = marqueeRef.current.querySelector(".marquee-inner");
         if (inner) {
-          gsap.to(inner, {
-            x: "-50%",
-            duration: 20,
-            ease: "none",
-            repeat: -1,
-          });
+          gsap.to(inner, { x: "-50%", duration: 20, ease: "none", repeat: -1 });
         }
+      }
+
+      // Why items: image scale 0.8 → 1.0 on scroll-in, fade-out on scroll-out
+      whyItemsRef.current.filter(Boolean).forEach((item) => {
+        const img = item?.querySelector("img");
+        if (!img) return;
+        gsap.fromTo(
+          img,
+          { scale: 0.8, opacity: 0.6 },
+          {
+            scale: 1.0,
+            opacity: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: item,
+              start: "top 80%",
+              end: "top 30%",
+              scrub: 1,
+            },
+          }
+        );
+        gsap.to(img, {
+          opacity: 0.2,
+          ease: "none",
+          scrollTrigger: {
+            trigger: item,
+            start: "bottom 60%",
+            end: "bottom 10%",
+            scrub: 1,
+          },
+        });
+      });
+
+      // Scrubbing text reveal on CTA paragraph
+      if (ctaTextRef.current) {
+        const text = ctaTextRef.current.textContent ?? "";
+        const words = text.split(" ");
+        ctaTextRef.current.innerHTML = words
+          .map((w) => `<span style="opacity:0.1;display:inline-block;margin-right:0.3em">${w}</span>`)
+          .join("");
+        gsap.to(ctaTextRef.current.querySelectorAll("span"), {
+          opacity: 1,
+          stagger: 0.06,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ctaTextRef.current,
+            start: "top 80%",
+            end: "bottom 55%",
+            scrub: 1,
+          },
+        });
       }
     });
 
     return () => ctx.revert();
-  }, [loading, events.length]);
+  }, [loading]);
 
-  const bentoStats = stats
-    ? [
-        { value: `${stats.activeEvents}+`, label: "Eventos activos" },
-        { value: stats.ticketsSold.toLocaleString("es-MX"), label: "Tickets vendidos" },
-        { value: `${stats.satisfaction}%`, label: "Satisfacción" },
-        { value: `${stats.cities}+`, label: "Ciudades en México" },
-        { value: `${stats.hiddenFees}%`, label: "Comisión oculta" },
-      ]
-    : [];
+  const filteredEvents =
+    selectedCity === "Todas"
+      ? events
+      : events.filter((e) => e.venue?.city === selectedCity);
 
   return (
     <main className="overflow-x-hidden w-full max-w-full">
+      {/* Hero */}
       <section
         ref={heroRef}
         className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden"
@@ -160,22 +251,20 @@ const HomePage: FC = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-brand-black/30 via-transparent to-brand-black" />
 
-        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
+        <div className="relative z-10 text-center px-6 max-w-6xl mx-auto w-full">
           <p className="text-brand-red font-mono text-xs tracking-[0.3em] uppercase mb-6">
-            Boletos en vivo — México
+            Boletos en vivo · México
           </p>
           <h1
-            className="font-display font-extrabold text-brand-white leading-[0.95] tracking-tight mb-8"
-            style={{ fontSize: "clamp(3rem, 7vw, 5.5rem)" }}
+            className="font-display font-extrabold text-brand-white leading-[0.95] tracking-tight mb-8 w-full"
+            style={{ fontSize: "clamp(3rem, 6.5vw, 5.5rem)" }}
           >
-            Tu próximo
-            <br />
-            momento épico
+            Tu próximo momento épico
             <br />
             <span className="text-brand-red">en México.</span>
           </h1>
           <p className="text-brand-gray/70 text-lg max-w-xl mx-auto mb-10">
-            Compra, revende y vive experiencias únicas. Precios en MXN, sin sobrecostes ocultos.
+            Compra, revende y vive experiencias únicas.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -199,26 +288,58 @@ const HomePage: FC = () => {
         </div>
       </section>
 
-      {bentoStats.length > 0 && (
+      {/* Bento Stats — 6-col perfect grid: 6×3 = 18 cells, zero empty */}
+      {stats && (
         <section className="py-32 md:py-48 px-6 max-w-7xl mx-auto">
-          <div
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px bg-white/10"
-            style={{ gridAutoFlow: "dense" }}
-          >
-            {bentoStats.map(({ value, label }, i) => (
-              <div
-                key={label}
-                className={`bg-brand-black p-8 flex flex-col justify-end ${
-                  i === 0 ? "col-span-2 md:col-span-1" : ""
-                } ${i === 2 ? "row-span-2 md:row-span-1" : ""}`}
-              >
-                <data className="font-display text-4xl md:text-5xl font-extrabold text-brand-white block">
-                  {value}
-                </data>
-                <span className="text-brand-gray/50 text-sm mt-2 font-mono">{label}</span>
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-px bg-white/10 grid-flow-dense">
+            {/* Big image card: 4 cols × 2 rows = 8 cells */}
+            <div className="col-span-2 md:col-span-4 md:row-span-2 relative overflow-hidden min-h-[280px] group">
+              <img
+                src="/images/stage.avif"
+                alt="Escenario"
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                style={{ filter: "grayscale(50%) brightness(0.55) contrast(1.1)" }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 to-transparent" />
+              <div className="absolute bottom-6 left-6">
+                <p className="font-mono text-xs text-brand-gray/60 mb-2 uppercase tracking-widest">
+                  Plataforma
+                </p>
+                <p className="font-display font-extrabold text-brand-white text-2xl leading-tight">
+                  Vive sin
+                  <br />
+                  intermediarios.
+                </p>
               </div>
-            ))}
+            </div>
 
+            {/* Right column: 2 stats (2 cols each) filling rows 1–2 */}
+            <div className="col-span-1 md:col-span-2 bg-brand-black p-8 flex flex-col justify-end">
+              <data className="font-display text-4xl md:text-5xl font-extrabold text-brand-white block">
+                {stats.activeEvents}+
+              </data>
+              <span className="text-brand-gray/50 text-sm mt-2 font-mono">Eventos activos</span>
+            </div>
+            <div className="col-span-1 md:col-span-2 bg-brand-black p-8 flex flex-col justify-end">
+              <data className="font-display text-4xl md:text-5xl font-extrabold text-brand-white block">
+                {stats.ticketsSold.toLocaleString("es-MX")}
+              </data>
+              <span className="text-brand-gray/50 text-sm mt-2 font-mono">Tickets vendidos</span>
+            </div>
+
+            {/* Bottom row: 3 cards × 2 cols = 6 cols */}
+            <div className="col-span-1 md:col-span-2 bg-brand-black p-8 flex flex-col justify-end">
+              <data className="font-display text-4xl md:text-5xl font-extrabold text-brand-white block">
+                {stats.satisfaction}%
+              </data>
+              <span className="text-brand-gray/50 text-sm mt-2 font-mono">Satisfacción</span>
+            </div>
+            <div className="col-span-1 md:col-span-2 bg-brand-black p-8 flex flex-col justify-end">
+              <data className="font-display text-4xl md:text-5xl font-extrabold text-brand-white block">
+                {stats.cities}+
+              </data>
+              <span className="text-brand-gray/50 text-sm mt-2 font-mono">Ciudades en México</span>
+            </div>
             <div className="col-span-2 md:col-span-2 bg-brand-red/10 border border-brand-red/20 p-8 flex flex-col justify-between">
               <Ticket size={28} className="text-brand-red" />
               <div>
@@ -226,7 +347,7 @@ const HomePage: FC = () => {
                   Reventa segura
                 </h3>
                 <p className="text-brand-gray/60 text-sm">
-                  Máximo +30% sobre el precio original. Sin estafas, sin sorpresas.
+                  Máximo +30% sobre el precio original. Sin estafas.
                 </p>
               </div>
             </div>
@@ -234,9 +355,10 @@ const HomePage: FC = () => {
         </section>
       )}
 
+      {/* Events — with city filter */}
       <section id="events" className="py-32 md:py-48 px-6" ref={eventsRef}>
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between mb-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
             <h2
               className="font-display font-extrabold text-brand-white"
               style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)" }}
@@ -245,6 +367,21 @@ const HomePage: FC = () => {
               <br />
               eventos
             </h2>
+            <div className="flex flex-wrap gap-2">
+              {MEXICO_CITIES.map((city) => (
+                <button
+                  key={city}
+                  onClick={() => setSelectedCity(city)}
+                  className={`px-4 py-2 text-xs font-mono transition-all duration-200 cursor-pointer ${
+                    selectedCity === city
+                      ? "bg-brand-white text-brand-black"
+                      : "border border-white/20 text-brand-gray/60 hover:border-white/50 hover:text-brand-white"
+                  }`}
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
           </div>
 
           {loading && (
@@ -266,7 +403,7 @@ const HomePage: FC = () => {
 
           {!loading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/10">
-              {events.map((event, i) => {
+              {filteredEvents.map((event, i) => {
                 const price = minZonePrice(event);
                 const venueLabel = event.venue
                   ? `${event.venue.name}, ${event.venue.city}`
@@ -315,30 +452,107 @@ const HomePage: FC = () => {
                   </div>
                 );
               })}
+              {filteredEvents.length === 0 && (
+                <div className="col-span-2 py-16 text-center text-brand-gray/40 font-mono text-sm">
+                  Sin eventos disponibles en {selectedCity}.
+                </div>
+              )}
             </div>
           )}
         </div>
       </section>
 
-      <section id="resales" className="py-24 px-6 border-t border-white/10">
+      {/* Why Stagefront */}
+      <section className="py-32 md:py-48 px-6 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
-          <h2 className="font-display font-extrabold text-brand-white text-2xl mb-8">
-            Reventas activas
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+            <div>
+              <p className="font-mono text-xs text-brand-red tracking-[0.3em] uppercase mb-6">
+                Por qué Stagefront
+              </p>
+              <h2
+                className="font-display font-extrabold text-brand-white"
+                style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)" }}
+              >
+                Transparencia
+                <br />
+                total.
+              </h2>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/10">
+            {WHY_ITEMS.map(({ title, desc, img }, i) => (
+              <div
+                key={title}
+                ref={(el) => {
+                  whyItemsRef.current[i] = el;
+                }}
+                className="bg-brand-black group cursor-pointer"
+              >
+                <div className="relative overflow-hidden aspect-[16/9]">
+                  <img
+                    src={img}
+                    alt={title}
+                    className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-90 group-hover:scale-105 transition-all duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 to-transparent" />
+                </div>
+                <div className="p-6">
+                  <h3 className="font-display font-bold text-xl text-brand-white mb-3 group-hover:text-brand-red transition-colors duration-200">
+                    {title}
+                  </h3>
+                  <p className="text-brand-gray/50 text-sm">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Resales */}
+      <section id="resales" className="py-32 md:py-48 px-6 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <h2
+            className="font-display font-extrabold text-brand-white mb-16"
+            style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)" }}
+          >
+            Reventas
+            <br />
+            activas
           </h2>
           {resales.length === 0 ? (
-            <p className="text-brand-gray/50 text-sm">No hay reventas activas por el momento.</p>
+            <p className="text-brand-gray/50 text-sm font-mono">
+              No hay reventas activas por el momento.
+            </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/10">
               {resales.map((r) => (
-                <div key={r.id} className="bg-brand-black p-6">
-                  <p className="font-semibold text-brand-white">{r.seat.zone.event.title}</p>
-                  <p className="text-sm text-brand-gray/60 mt-1">
-                    {r.seat.zone.name} — {r.seat.zone.event.venue.name},{" "}
-                    {r.seat.zone.event.venue.city}
-                  </p>
-                  <p className="font-display font-bold text-brand-red text-xl mt-3">
-                    {formatMXN(Number(r.price))}
-                  </p>
+                <div
+                  key={r.id}
+                  className="bg-brand-black overflow-hidden hover:bg-white/5 transition-colors duration-300 cursor-pointer"
+                >
+                  <div className="relative aspect-[4/3]">
+                    <img
+                      src={r.seat.zone.event.image_url ?? "/images/rosalia.jpg"}
+                      alt={r.seat.zone.event.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ filter: "grayscale(30%) brightness(0.75)" }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-black/60 to-transparent" />
+                  </div>
+                  <div className="p-8">
+                    <p className="font-semibold text-brand-white text-lg">
+                      {r.seat.zone.event.title}
+                    </p>
+                    <p className="text-sm text-brand-gray/60 mt-1 font-mono">
+                      {r.seat.zone.name} — {r.seat.zone.event.venue.name},{" "}
+                      {r.seat.zone.event.venue.city}
+                    </p>
+                    <p className="font-display font-bold text-brand-red text-2xl mt-4">
+                      {formatMXN(Number(r.price))}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -346,10 +560,11 @@ const HomePage: FC = () => {
         </div>
       </section>
 
+      {/* Marquee */}
       <div ref={marqueeRef} className="py-8 overflow-hidden border-y border-white/10">
         <div className="marquee-inner flex gap-16 whitespace-nowrap will-change-transform">
           {[...Array(2)].map((_, ri) =>
-            MEXICO_CITIES.map((city, ci) => (
+            MEXICO_CITIES.filter((c) => c !== "Todas").map((city, ci) => (
               <span
                 key={`${ri}-${ci}`}
                 className="font-display font-extrabold text-2xl text-brand-white/20 uppercase tracking-widest"
@@ -361,6 +576,7 @@ const HomePage: FC = () => {
         </div>
       </div>
 
+      {/* CTA */}
       <section className="py-32 md:py-48 px-6">
         <div className="max-w-5xl mx-auto text-center">
           <h2
@@ -371,7 +587,7 @@ const HomePage: FC = () => {
             <br />
             <span className="text-brand-red">Sin intermediarios.</span>
           </h2>
-          <p className="text-brand-gray/60 text-lg mb-10 max-w-lg mx-auto">
+          <p ref={ctaTextRef} className="text-brand-gray/60 text-lg mb-10 max-w-lg mx-auto">
             Plataforma 100% transparente. Compra y revende con total confianza en México.
           </p>
           <Link
@@ -390,14 +606,18 @@ const HomePage: FC = () => {
             STAGEFRONT © 2026 — México
           </span>
           <nav className="flex gap-6 items-center">
-            {["Términos", "Privacidad", "Contacto"].map((item) => (
-              <a
-                key={item}
-                href="#"
+            {[
+              { label: "Términos", to: "/terms" },
+              { label: "Privacidad", to: "/privacy" },
+              { label: "Contacto", to: "/contact" },
+            ].map(({ label, to }) => (
+              <Link
+                key={label}
+                to={to}
                 className="text-xs text-brand-gray/40 hover:text-brand-white transition-colors duration-200 cursor-pointer"
               >
-                {item}
-              </a>
+                {label}
+              </Link>
             ))}
             <Link
               to="/admin"

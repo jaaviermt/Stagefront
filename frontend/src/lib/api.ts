@@ -58,6 +58,7 @@ export interface ResaleItem {
       event: {
         id: string;
         title: string;
+        image_url?: string | null;
         venue: { name: string; city: string };
       };
     };
