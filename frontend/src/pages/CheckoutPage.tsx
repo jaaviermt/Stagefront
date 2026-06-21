@@ -21,6 +21,7 @@ const CheckoutPage: FC = () => {
   const [step, setStep] = useState<Step>("details");
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -37,13 +38,56 @@ const CheckoutPage: FC = () => {
   const total = subtotal - discount;
 
   const handlePromo = (): void => {
-    if (promoCode.toLowerCase() === "stagefront10") setPromoApplied(true);
+    if (promoCode.trim().toLowerCase() === "stagefront10") {
+      setPromoApplied(true);
+      setPromoError(null);
+    } else {
+      setPromoError("Código promocional inválido.");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     if (step === "details") {
+      if (!form.name.trim()) {
+        setSubmitError("Ingresa tu nombre completo.");
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+        setSubmitError("Ingresa un email válido.");
+        return;
+      }
+      setSubmitError(null);
       setStep("payment");
+      return;
+    }
+
+    if (!/^\d{13,19}$/.test(form.cardNumber.replace(/\s/g, ""))) {
+      setSubmitError("Ingresa un número de tarjeta válido (13 a 19 dígitos).");
+      return;
+    }
+
+    const expiryMatch = form.expiry.match(/^(\d{2})\/(\d{2})$/);
+    if (!expiryMatch) {
+      setSubmitError("Ingresa la fecha de caducidad en formato MM/AA.");
+      return;
+    }
+    const expMonth = Number(expiryMatch[1]);
+    const expYear = 2000 + Number(expiryMatch[2]);
+    if (expMonth < 1 || expMonth > 12) {
+      setSubmitError("El mes de caducidad no es válido.");
+      return;
+    }
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+      setSubmitError("La tarjeta está vencida.");
+      return;
+    }
+
+    if (!/^\d{3,4}$/.test(form.cvv)) {
+      setSubmitError("El CVV debe tener 3 o 4 dígitos.");
       return;
     }
 
@@ -191,7 +235,10 @@ const CheckoutPage: FC = () => {
                       <input
                         type="text"
                         value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        onChange={(e) => {
+                          setPromoCode(e.target.value.toUpperCase());
+                          setPromoError(null);
+                        }}
                         disabled={promoApplied}
                         className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-brand-white placeholder-brand-gray/30 focus:outline-none focus:border-brand-red transition-colors duration-200 font-mono text-sm disabled:opacity-50"
                         placeholder="STAGEFRONT10"
@@ -212,6 +259,11 @@ const CheckoutPage: FC = () => {
                     {promoApplied && (
                       <p className="text-xs text-brand-green mt-2 font-mono">
                         ¡10% de descuento aplicado!
+                      </p>
+                    )}
+                    {promoError && !promoApplied && (
+                      <p className="text-xs text-brand-red mt-2 font-mono">
+                        {promoError}
                       </p>
                     )}
                   </div>
@@ -317,6 +369,20 @@ const CheckoutPage: FC = () => {
                   ? "Procesando…"
                   : `Pagar ${formatMXN(total)}`}
               </button>
+
+              {step === "payment" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("details");
+                    setSubmitError(null);
+                  }}
+                  className="w-full py-4 border border-white/20 text-brand-white font-semibold hover:border-brand-red hover:text-brand-red transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <ChevronLeft size={16} />
+                  Atrás
+                </button>
+              )}
             </form>
           </div>
 

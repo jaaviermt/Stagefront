@@ -10,6 +10,8 @@ import type { Review, Zone } from "../types/index.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const MAX_TICKETS_PER_ORDER = 10;
+
 const EventDetailPage: FC = () => {
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<ApiEventDetail | null>(null);
@@ -208,7 +210,12 @@ const EventDetailPage: FC = () => {
                     <button
                       key={zone.id}
                       disabled={soldOut}
-                      onClick={() => setSelectedZone(zone)}
+                      onClick={() => {
+                        setSelectedZone(zone);
+                        setQuantity((q) =>
+                          Math.min(q, zone.available_seats, MAX_TICKETS_PER_ORDER)
+                        );
+                      }}
                       className={`w-full flex items-center justify-between p-5 transition-all duration-200 cursor-pointer text-left ${
                         isSelected
                           ? "bg-brand-white/10 border-l-2 border-brand-red"
@@ -304,13 +311,17 @@ const EventDetailPage: FC = () => {
                       >
                         −
                       </button>
-                      <output className="font-mono text-brand-white w-4 text-center">
+                      <output className="font-mono text-brand-white min-w-[2rem] text-center">
                         {quantity}
                       </output>
                       <button
                         onClick={() =>
                           setQuantity((q) =>
-                            Math.min(selectedZone.available_seats, q + 1)
+                            Math.min(
+                              selectedZone.available_seats,
+                              MAX_TICKETS_PER_ORDER,
+                              q + 1
+                            )
                           )
                         }
                         className="w-7 h-7 bg-white/10 hover:bg-white/20 flex items-center justify-center text-brand-white transition-colors duration-200 cursor-pointer"
@@ -320,6 +331,14 @@ const EventDetailPage: FC = () => {
                       </button>
                     </div>
                   </div>
+                  {quantity >=
+                    Math.min(selectedZone.available_seats, MAX_TICKETS_PER_ORDER) && (
+                    <p className="text-xs text-brand-gray/40 font-mono text-right">
+                      Máximo{" "}
+                      {Math.min(selectedZone.available_seats, MAX_TICKETS_PER_ORDER)} boletos
+                      por compra
+                    </p>
+                  )}
                   <div className="border-t border-white/10 pt-4 flex justify-between">
                     <span className="text-brand-gray/60 text-sm">Total</span>
                     <span className="font-display font-bold text-2xl text-brand-white">

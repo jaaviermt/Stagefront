@@ -130,7 +130,7 @@ const ResalesPage: FC = () => {
               {resales.length} {resales.length === 1 ? "boleto disponible" : "boletos disponibles"}
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px">
               {resales.map((r, i) => {
                 const eventTitle = r.seat.zone.event.title;
                 const zoneName = r.seat.zone.name;

@@ -427,7 +427,7 @@ const HomePage: FC = () => {
           )}
 
           {!loading && !error && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-px">
               {visibleEvents.map((event, i) => {
                 const price = minZonePrice(event);
                 const venueLabel = event.venue
@@ -565,11 +565,12 @@ const HomePage: FC = () => {
               No hay reventas activas por el momento.
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-px">
               {resales.map((r) => (
-                <div
+                <Link
                   key={r.id}
-                  className="bg-brand-black overflow-hidden hover:bg-white/5 transition-colors duration-300 cursor-pointer"
+                  to={`/events/${r.seat.zone.event.id}`}
+                  className="block bg-brand-black overflow-hidden hover:bg-white/5 transition-colors duration-300 cursor-pointer"
                 >
                   <div className="relative aspect-[4/3]">
                     <img
@@ -592,7 +593,7 @@ const HomePage: FC = () => {
                       {formatMXN(Number(r.price))}
                     </p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
