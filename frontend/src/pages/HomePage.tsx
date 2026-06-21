@@ -265,10 +265,10 @@ const HomePage: FC = () => {
       >
         <img
           ref={heroImgRef}
-          src="https://picsum.photos/seed/stagefront-mexico/1920/1080"
+          src="/images/stage.avif"
           alt="Concierto en vivo en México"
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: "grayscale(40%) brightness(0.45)", mixBlendMode: "luminosity" }}
+          style={{ filter: "grayscale(40%) brightness(0.55)" }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-brand-black/30 via-transparent to-brand-black" />
 
@@ -316,7 +316,7 @@ const HomePage: FC = () => {
             {/* Big image card: 4 cols × 2 rows = 8 cells */}
             <div className="col-span-2 md:col-span-4 md:row-span-2 relative overflow-hidden min-h-[280px] group">
               <img
-                src="/images/stage.avif"
+                src="/images/ariana.jpg"
                 alt="Escenario"
                 className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
                 style={{ filter: "grayscale(50%) brightness(0.55) contrast(1.1)" }}

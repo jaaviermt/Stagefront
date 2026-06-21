@@ -8,6 +8,7 @@ import EventsPage from "./pages/EventsPage.js";
 import EventDetailPage from "./pages/EventDetailPage.js";
 import ResalesPage from "./pages/ResalesPage.js";
 import CheckoutPage from "./pages/CheckoutPage.js";
+import OrdersPage from "./pages/OrdersPage.js";
 import AdminLoginPage from "./pages/AdminLoginPage.js";
 import AdminDashboardPage from "./pages/AdminDashboardPage.js";
 
@@ -35,6 +36,7 @@ const App: FC = () => {
                 <Route path="/events/:id" element={<EventDetailPage />} />
                 <Route path="/resales" element={<ResalesPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/orders" element={<OrdersPage />} />
               </Routes>
             </>
           }

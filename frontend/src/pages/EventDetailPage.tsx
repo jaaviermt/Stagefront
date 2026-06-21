@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { MapPin, Calendar, Clock, ArrowRight, Star, ChevronLeft, Loader2 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { fetchEvent, fetchEventReviews } from "../lib/api.js";
+import { fetchEvent, fetchEventReviews, createReview, DEMO_USER_ID } from "../lib/api.js";
 import type { ApiEventDetail } from "../lib/api.js";
 import { formatMXN, formatEventDate, formatEventDateShort } from "../lib/format.js";
 import type { Review, Zone } from "../types/index.js";
@@ -20,6 +20,10 @@ const EventDetailPage: FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [newRating, setNewRating] = useState(5);
+  const [newComment, setNewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const heroRef = useRef<HTMLDivElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
@@ -102,6 +106,36 @@ const EventDetailPage: FC = () => {
     });
     return () => ctx.revert();
   }, [event]);
+
+  const handleReviewSubmit = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    if (!event) return;
+    if (!newComment.trim()) {
+      setReviewError("Escribe un comentario.");
+      return;
+    }
+    setReviewSubmitting(true);
+    setReviewError(null);
+    try {
+      const created = await createReview({
+        user_id: DEMO_USER_ID,
+        event_id: event.id,
+        rating: newRating,
+        comment: newComment.trim(),
+      });
+      setReviews((prev) => [created, ...prev]);
+      setNewComment("");
+      setNewRating(5);
+    } catch (err) {
+      setReviewError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo enviar la reseña. Puede que ya hayas reseñado este evento."
+      );
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -286,6 +320,54 @@ const EventDetailPage: FC = () => {
                   ))}
                 </div>
               )}
+
+              <form
+                onSubmit={(e) => void handleReviewSubmit(e)}
+                className="mt-8 bg-white/5 border border-white/10 p-5"
+              >
+                <h3 className="font-display font-bold text-base text-brand-white mb-4">
+                  Escribe una reseña
+                </h3>
+                <div className="flex items-center gap-1 mb-4">
+                  {Array.from({ length: 5 }).map((_, s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setNewRating(s + 1)}
+                      className="cursor-pointer p-0.5"
+                      aria-label={`${s + 1} estrellas`}
+                    >
+                      <Star
+                        size={20}
+                        className={s < newRating ? "text-brand-red" : "text-white/20"}
+                        fill={s < newRating ? "currentColor" : "none"}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={newComment}
+                  onChange={(e) => {
+                    setNewComment(e.target.value);
+                    setReviewError(null);
+                  }}
+                  rows={3}
+                  maxLength={2000}
+                  className="w-full bg-brand-black border border-white/10 px-4 py-3 text-brand-white placeholder-brand-gray/30 focus:outline-none focus:border-brand-red transition-colors duration-200 text-sm resize-none"
+                  placeholder="Comparte tu experiencia…"
+                />
+                {reviewError && (
+                  <p className="text-xs text-brand-red mt-2 font-mono">{reviewError}</p>
+                )}
+                <button
+                  type="submit"
+                  disabled={reviewSubmitting}
+                  className="mt-4 inline-flex items-center gap-2 px-6 py-3 bg-brand-red text-brand-white text-sm font-semibold hover:bg-brand-white hover:text-brand-black transition-all duration-200 cursor-pointer disabled:opacity-50"
+                >
+                  {reviewSubmitting && <Loader2 size={16} className="animate-spin" />}
+                  Publicar reseña
+                </button>
+              </form>
             </div>
           </div>
 

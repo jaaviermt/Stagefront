@@ -18,6 +18,7 @@ const Navbar: FC = () => {
   const navLinks = [
     { label: "Eventos", to: "/events" },
     { label: "Reventas", to: "/resales" },
+    { label: "Mis compras", to: "/orders" },
   ];
 
   return (
@@ -29,6 +30,7 @@ const Navbar: FC = () => {
       <nav className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
         <Link
           to="/"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           className="font-display text-xl font-bold tracking-tight text-brand-white hover:text-brand-red transition-colors duration-200"
         >
           STAGEFRONT
@@ -49,14 +51,6 @@ const Navbar: FC = () => {
               </Link>
             </li>
           ))}
-          <li>
-            <Link
-              to="/events"
-              className="px-4 py-2 bg-brand-white text-brand-black text-sm font-semibold hover:bg-brand-red hover:text-brand-white transition-all duration-200 cursor-pointer"
-            >
-              Comprar
-            </Link>
-          </li>
         </ul>
 
         <button
@@ -70,7 +64,7 @@ const Navbar: FC = () => {
 
       {open && (
         <div className="md:hidden bg-brand-black/95 border-t border-white/10 px-6 py-6 space-y-4">
-          {[...navLinks, { label: "Comprar", to: "/events" }].map(({ label, to }) => (
+          {navLinks.map(({ label, to }) => (
             <Link
               key={label}
               to={to}

@@ -143,6 +143,47 @@ export interface CreatedOrder {
   status: string;
 }
 
+export interface UserOrderItem {
+  id: string;
+  seat_id: string;
+  price: number | string;
+}
+
+export interface UserOrder {
+  id: string;
+  total: number | string;
+  status: string;
+  created_at: string;
+  event: {
+    id: string;
+    title: string;
+    date: string;
+    image_url?: string | null;
+    venue?: { name: string; city: string };
+  };
+  order_items: UserOrderItem[];
+}
+
+export interface CreateReviewPayload {
+  user_id: string;
+  event_id: string;
+  rating: number;
+  comment: string;
+}
+
+export interface CreateResalePayload {
+  seat_id: string;
+  seller_id: string;
+  price: number;
+}
+
+export interface CreatedResale {
+  id: string;
+  seat_id: string;
+  price: number | string;
+  status: string;
+}
+
 export const DEMO_USER_ID = import.meta.env.VITE_DEMO_USER_ID ?? "seed-user-demo";
 
 export function fetchPublicStats(): Promise<PublicStats> {
@@ -164,6 +205,24 @@ export function fetchEventReviews(eventId: string): Promise<Review[]> {
 
 export function fetchResales(): Promise<ResaleItem[]> {
   return request<ResaleItem[]>("/resales");
+}
+
+export function fetchUserOrders(userId: string): Promise<UserOrder[]> {
+  return request<UserOrder[]>(`/users/${userId}/orders`);
+}
+
+export function createReview(payload: CreateReviewPayload): Promise<Review> {
+  return request<Review>("/reviews", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function createResale(payload: CreateResalePayload): Promise<CreatedResale> {
+  return request<CreatedResale>("/resales", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export function fetchAdminStats(): Promise<AdminStats> {

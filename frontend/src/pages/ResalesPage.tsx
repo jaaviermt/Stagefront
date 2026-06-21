@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Tag, ShieldCheck, Loader2, ArrowRight } from "lucide-react";
+import { MapPin, Tag, ShieldCheck, Loader2, ArrowRight, Search, X } from "lucide-react";
 import gsap from "gsap";
 import { fetchResales } from "../lib/api.js";
 import { formatMXN } from "../lib/format.js";
@@ -10,6 +10,8 @@ const ResalesPage: FC = () => {
   const [resales, setResales] = useState<ResaleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [city, setCity] = useState("Todas");
 
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -55,6 +57,23 @@ const ResalesPage: FC = () => {
     });
     return () => ctx.revert();
   }, [loading]);
+
+  const cities = [
+    "Todas",
+    ...Array.from(new Set(resales.map((r) => r.seat.zone.event.venue.city))).sort(),
+  ];
+
+  const filtered = resales.filter((r) => {
+    const matchesCity = city === "Todas" || r.seat.zone.event.venue.city === city;
+    const q = search.trim().toLowerCase();
+    const matchesSearch =
+      !q ||
+      r.seat.zone.event.title.toLowerCase().includes(q) ||
+      r.seat.zone.name.toLowerCase().includes(q) ||
+      r.seat.zone.event.venue.name.toLowerCase().includes(q) ||
+      r.seat.zone.event.venue.city.toLowerCase().includes(q);
+    return matchesCity && matchesSearch;
+  });
 
   return (
     <main className="overflow-x-hidden w-full max-w-full min-h-screen bg-brand-black">
@@ -123,15 +142,66 @@ const ResalesPage: FC = () => {
           </div>
         )}
 
+        {/* Filtros */}
+        {!loading && !error && resales.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            <div className="relative flex-1">
+              <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gray/40" />
+              <input
+                type="text"
+                placeholder="Evento, zona o ciudad…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 text-brand-white placeholder:text-brand-gray/40 text-sm pl-10 pr-10 py-3 focus:outline-none focus:border-brand-red transition-colors duration-200"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-gray/40 hover:text-brand-white cursor-pointer transition-colors duration-150"
+                  aria-label="Limpiar búsqueda"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="appearance-none bg-white/5 border border-white/10 text-brand-white text-sm px-4 py-3 focus:outline-none focus:border-brand-red transition-colors duration-200 cursor-pointer min-w-[200px]"
+            >
+              {cities.map((c) => (
+                <option key={c} value={c} className="bg-brand-black">
+                  {c === "Todas" ? "Todas las ciudades" : c}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Grid de reventas */}
         {!loading && !error && resales.length > 0 && (
           <>
             <p className="font-mono text-xs text-brand-gray/40 mb-8">
-              {resales.length} {resales.length === 1 ? "boleto disponible" : "boletos disponibles"}
+              {filtered.length}{" "}
+              {filtered.length === 1 ? "boleto disponible" : "boletos disponibles"}
             </p>
 
+            {filtered.length === 0 ? (
+              <div className="py-20 text-center border border-white/10">
+                <p className="text-brand-gray/40 text-base mb-2">Sin resultados</p>
+                <button
+                  onClick={() => {
+                    setSearch("");
+                    setCity("Todas");
+                  }}
+                  className="text-xs font-mono text-brand-red hover:text-brand-white transition-colors duration-200 cursor-pointer underline underline-offset-4"
+                >
+                  Limpiar filtros
+                </button>
+              </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px">
-              {resales.map((r, i) => {
+              {filtered.map((r, i) => {
                 const eventTitle = r.seat.zone.event.title;
                 const zoneName = r.seat.zone.name;
                 const venueName = r.seat.zone.event.venue.name;
@@ -187,6 +257,7 @@ const ResalesPage: FC = () => {
                 );
               })}
             </div>
+            )}
           </>
         )}
       </div>
