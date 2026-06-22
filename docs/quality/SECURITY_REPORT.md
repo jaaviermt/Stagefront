@@ -13,17 +13,17 @@ sí está correctamente validada en el servidor.
 
 | # | Categoría | Estado | Hallazgo | Recomendación |
 |---|-----------|--------|----------|---------------|
-| A01 | Broken Access Control | ❌ | `/api/v1/admin/*` sin auth (DEF-001); guard solo en el cliente | Middleware de auth + verificación de rol en backend |
+| A01 | Broken Access Control | ❌ | `/api/v1/admin/*` sin auth; guard solo en el cliente | Middleware de auth + verificación de rol en backend |
 | A02 | Cryptographic Failures | ⚠️ | `password_hash` en schema pero sin hashing real; `JWT_SECRET` sin uso | Implementar `bcrypt` + JWT firmado |
 | A03 | Injection (SQL) | ✅ | Prisma parametriza todas las queries; sin SQL crudo | Mantener; evitar `$queryRawUnsafe` |
-| A03 | Injection (NoSQL) | ⚠️ | `req.body` llega sin validar a Mongoose (DEF-003) | Validar con Zod antes de consultar |
+| A03 | Injection (NoSQL) | ⚠️ | `req.body` llega sin validar a Mongoose | Validar con Zod antes de consultar |
 | A03 | XSS | ✅/⚠️ | React escapa por defecto; no se detectó `dangerouslySetInnerHTML` | Mantener; CSP vía helmet |
 | A04 | Insecure Design | ⚠️ | Auth de cliente, checkout simulado | Documentado; rediseñar auth para producción |
-| A05 | Security Misconfiguration | ❌ | `cors()` abierto (DEF-006); sin `helmet` (DEF-007) | CORS por allowlist + helmet |
+| A05 | Security Misconfiguration | ❌ | `cors()` abierto; sin `helmet` | CORS por allowlist + helmet |
 | A06 | Vulnerable Components | ❌ | `npm audit` frontend: 5 vulns (1 baja, 3 mod, 1 alta) | `npm audit fix`; planear subir a vite/react-router |
-| A07 | Identification & Auth Failures | ❌ | Credenciales hardcodeadas (DEF-002); sin expiración de sesión robusta | Auth real, rate-limit de login |
+| A07 | Identification & Auth Failures | ❌ | Credenciales hardcodeadas; sin expiración de sesión robusta | Auth real, rate-limit de login |
 | A08 | Software & Data Integrity | ✅ | `package-lock.json` presente; sin CDN de scripts no fijados | Mantener lockfiles |
-| A09 | Logging & Monitoring Failures | ⚠️ | Solo `console.*`; sin auditoría (DEF-009) | Winston + logs de eventos de seguridad |
+| A09 | Logging & Monitoring Failures | ⚠️ | Solo `console.*`; sin auditoría | Winston + logs de eventos de seguridad |
 | A10 | SSRF | ✅ | El servidor no hace fetch a URLs provistas por el usuario | Mantener |
 
 ## Detalle de `npm audit`

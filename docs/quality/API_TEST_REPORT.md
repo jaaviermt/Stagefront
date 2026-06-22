@@ -31,9 +31,9 @@
 | 200/204 | DELETE evento admin | TC-API-05 |
 | 400 | POST orden sin asientos | TC-API-01 |
 | 404 | Evento inexistente / reventa sin compra original | TC-API-03/INT-07 |
-| 4xx/5xx | PATCH evento inexistente (defecto DEF-004) | TC-API |
+| 4xx/5xx | PATCH evento inexistente (defecto conocido) | TC-API |
 
-> **Códigos 401/403/409:** no aplican aún porque la API **carece de autenticación** (DEF-001) y los
+> **Códigos 401/403/409:** no aplican aún porque la API **carece de autenticación** y los
 > endpoints actuales no devuelven 409. Los tests están preparados para añadir estos casos en cuanto
 > se implemente auth (ver `SECURITY_REPORT`).
 
@@ -53,5 +53,5 @@
 
 ## 6. Hallazgo
 `GET /api/v1/stats` dependía de una conexión Mongo activa y, sin ella, hacía buffering ~10s y
-devolvía `500` (DEF-011). Se añadió la conexión Mongo en el `setup` de la suite; tras ello el caso
+devolvía `500`. Se añadió la conexión Mongo en el `setup` de la suite; tras ello el caso
 pasa en `200`.
