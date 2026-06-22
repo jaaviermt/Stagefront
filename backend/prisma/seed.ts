@@ -70,6 +70,12 @@ async function createSeatsForZone(
 }
 
 async function seedPostgres(): Promise<void> {
+  const existing = await prisma.user.count();
+  if (existing > 0) {
+    console.info("PostgreSQL already seeded, skipping.");
+    return;
+  }
+
   await prisma.resale.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
@@ -572,6 +578,14 @@ async function seedMongo(): Promise<void> {
   if (!uri) throw new Error("MONGODB_URI is not defined");
 
   await mongoose.connect(uri);
+
+  const existing = await ArtistProfile.countDocuments();
+  if (existing > 0) {
+    console.info("MongoDB already seeded, skipping.");
+    await mongoose.disconnect();
+    return;
+  }
+
   await Review.deleteMany({});
   await ActivityLog.deleteMany({});
   await Notification.deleteMany({});

@@ -7,7 +7,7 @@ services:
     buildCommand: >-
       cd frontend && npm ci --include=dev && npm run build &&
       cd ../backend && npm ci --include=dev && npx prisma generate && npm run build
-    startCommand: cd backend && npx prisma db push && node dist/index.js
+    startCommand: cd backend && npx prisma db push && npx tsx prisma/seed.ts && node dist/index.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
