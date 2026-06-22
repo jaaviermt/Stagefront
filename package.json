@@ -6,7 +6,11 @@
   "type": "module",
   "scripts": {
     "test:e2e": "cypress run",
-    "test:e2e:open": "cypress open"
+    "test:e2e:open": "cypress open",
+    "perf:load": "k6 run tests/performance/load.test.js",
+    "perf:stress": "k6 run tests/performance/stress.test.js",
+    "perf:spike": "k6 run tests/performance/spike.test.js",
+    "perf:soak": "k6 run tests/performance/soak.test.js"
   },
   "devDependencies": {
     "cypress": "^15.17.0",

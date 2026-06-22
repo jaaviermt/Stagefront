@@ -7,7 +7,12 @@ export default defineConfig({
     include: ["tests/**/*.test.ts"],
     // Integration & database suites require live Postgres/Mongo; they are
     // excluded from the default run and enabled explicitly via npm scripts.
-    exclude: ["node_modules/**", "dist/**", "tests/integration/**"],
+    exclude: [
+      "node_modules/**",
+      "dist/**",
+      "tests/integration/**",
+      "tests/database/**",
+    ],
     coverage: {
       provider: "v8",
       reporter: ["text", "text-summary", "html", "json-summary"],
