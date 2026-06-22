@@ -1,8 +1,10 @@
 import morgan, { type StreamOptions } from "morgan";
-import type { Request, RequestHandler } from "express";
+import type { Request, Response, RequestHandler } from "express";
 import { logger } from "../lib/logger.js";
 
-morgan.token("correlationId", (req: Request) => req.correlationId ?? "-");
+morgan.token("correlationId", (_req: Request, res: Response) =>
+  String(res.locals["correlationId"] ?? "-")
+);
 
 const stream: StreamOptions = {
   write: (message: string) => {
