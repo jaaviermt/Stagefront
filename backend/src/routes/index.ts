@@ -16,6 +16,7 @@ import {
   updateAdminOrder,
   deleteAdminOrder,
 } from "../controllers/adminController.js";
+import { getLogs, getLogStats } from "../controllers/logsController.js";
 
 const router = Router();
 
@@ -50,5 +51,9 @@ router.patch("/admin/events/:id", updateAdminEvent);
 router.delete("/admin/events/:id", deleteAdminEvent);
 router.patch("/admin/orders/:id", updateAdminOrder);
 router.delete("/admin/orders/:id", deleteAdminOrder);
+
+// Logs dashboard (lectura de archivos de log estructurados)
+router.get("/admin/logs", getLogs);
+router.get("/admin/logs/stats", getLogStats);
 
 export default router;

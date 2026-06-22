@@ -26,7 +26,9 @@ describe("Public purchase journey", () => {
     cy.visit("/events");
     cy.get('a[href*="/events/"]').first().click();
     cy.location("pathname").should("match", /\/events\/.+/);
-    cy.contains("button, a", /comprar|checkout|pagar/i).should("exist");
+    // El CTA de compra solo aparece tras seleccionar una zona.
+    cy.get('[data-testid="zone-option"]:not([disabled])').first().click();
+    cy.get('[data-testid="checkout-cta"]').should("be.visible");
   });
 
   it("resales page renders", () => {

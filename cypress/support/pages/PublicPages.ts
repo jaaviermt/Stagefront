@@ -16,9 +16,9 @@ export class EventsPage {
     cy.visit("/events");
   }
   search(term: string): void {
-    cy.get('input[placeholder*="uscar"]').clear().type(term);
+    cy.get('[data-testid="events-search"]').clear().type(term);
   }
   searchInput(): Cypress.Chainable<JQuery<HTMLElement>> {
-    return cy.get('input[placeholder*="uscar"]');
+    return cy.get('[data-testid="events-search"]');
   }
 }

@@ -11,6 +11,7 @@ import CheckoutPage from "./pages/CheckoutPage.js";
 import OrdersPage from "./pages/OrdersPage.js";
 import AdminLoginPage from "./pages/AdminLoginPage.js";
 import AdminDashboardPage from "./pages/AdminDashboardPage.js";
+import AdminLogsPage from "./pages/AdminLogsPage.js";
 
 const App: FC = () => {
   return (
@@ -22,6 +23,14 @@ const App: FC = () => {
           element={
             <AdminGuard>
               <AdminDashboardPage />
+            </AdminGuard>
+          }
+        />
+        <Route
+          path="/admin/logs"
+          element={
+            <AdminGuard>
+              <AdminLogsPage />
             </AdminGuard>
           }
         />

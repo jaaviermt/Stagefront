@@ -287,3 +287,33 @@ export function updateAdminOrder(id: string, status: string): Promise<void> {
 export function deleteAdminOrder(id: string): Promise<void> {
   return request<void>(`/admin/orders/${id}`, { method: "DELETE" });
 }
+
+// ---------- Logs dashboard ----------
+
+export interface LogEntry {
+  timestamp?: string;
+  level?: "error" | "warn" | "info" | "http";
+  message?: string;
+  [key: string]: unknown;
+}
+
+export interface LogStats {
+  counts: { error: number; warn: number; info: number; http: number };
+  errorsByHour: { hour: string; count: number }[];
+  topErrors: { message: string; count: number }[];
+  recentErrors: LogEntry[];
+}
+
+export async function fetchAdminLogs(
+  level: string = "all",
+  limit: number = 100
+): Promise<{ data: LogEntry[]; total: number }> {
+  const res = await fetch(`${API_BASE}/admin/logs?level=${level}&limit=${limit}`);
+  const json = (await res.json()) as { data: LogEntry[]; total: number; error?: string };
+  if (!res.ok) throw new Error(json.error ?? `Error ${res.status}`);
+  return { data: json.data, total: json.total };
+}
+
+export function fetchAdminLogStats(): Promise<LogStats> {
+  return request<LogStats>("/admin/logs/stats");
+}

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import { validateResalePrice } from "../services/resaleService.js";
+import { logger } from "../lib/logger.js";
 
 export async function createResale(req: Request, res: Response): Promise<void> {
   try {
@@ -20,6 +21,11 @@ export async function createResale(req: Request, res: Response): Promise<void> {
     }
 
     if (!validateResalePrice(Number(orderItem.price), price)) {
+      logger.warn("resale.price_violation", {
+        seatId: seat_id,
+        originalPrice: Number(orderItem.price),
+        requestedPrice: price,
+      });
       res.status(400).json({
         error: "Resale price exceeds the 30% maximum markup",
       });
@@ -30,8 +36,17 @@ export async function createResale(req: Request, res: Response): Promise<void> {
       data: { seat_id, seller_id, price, status: "active" },
     });
 
+    logger.info("resale.created", {
+      resaleId: resale.id,
+      seatId: seat_id,
+      sellerId: seller_id,
+      price,
+    });
     res.status(201).json({ data: resale });
-  } catch {
+  } catch (err) {
+    logger.error("resale.create_failed", {
+      message: err instanceof Error ? err.message : String(err),
+    });
     res.status(500).json({ error: "Failed to create resale" });
   }
 }

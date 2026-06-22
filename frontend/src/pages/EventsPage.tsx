@@ -117,6 +117,7 @@ const EventsPage: FC = () => {
             <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gray/40" />
             <input
               type="text"
+              data-testid="events-search"
               placeholder="Artista, evento o género…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

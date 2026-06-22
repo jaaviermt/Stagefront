@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Review } from "../models/mongoose/Review.js";
 import { ActivityLog } from "../models/mongoose/ActivityLog.js";
+import { logger } from "../lib/logger.js";
 
 export async function getEventReviews(req: Request, res: Response): Promise<void> {
   try {
@@ -30,8 +31,17 @@ export async function createReview(req: Request, res: Response): Promise<void> {
       metadata: { event_id, review_id: review._id },
     });
 
+    logger.info("review.created", {
+      reviewId: String(review._id),
+      userId: user_id,
+      eventId: event_id,
+      rating,
+    });
     res.status(201).json({ data: review });
-  } catch {
+  } catch (err) {
+    logger.error("review.create_failed", {
+      message: err instanceof Error ? err.message : String(err),
+    });
     res.status(500).json({ error: "Failed to create review" });
   }
 }

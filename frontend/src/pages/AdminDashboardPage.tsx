@@ -422,6 +422,19 @@ const AdminDashboardPage: FC = () => {
               SISTEMA ACTIVO
             </span>
             <Link
+              to="/admin/logs"
+              style={{
+                color: "#E61919",
+                textDecoration: "none",
+                fontSize: "0.65rem",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                borderBottom: "1px solid #E61919",
+              }}
+            >
+              [ SYSTEM LOGS ]
+            </Link>
+            <Link
               to="/"
               style={{
                 color: "#444",

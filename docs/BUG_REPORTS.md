@@ -229,18 +229,64 @@
 
 ---
 
+# BUG-009 - No existe límite máximo de boletos por compra
+
+| Campo                 | Detalle                                                                                                                                                                                                                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ID                    | BUG-009                                                                                                                                                                                                                                                                                                |
+| Título                | Checkout - Límite de boletos - El sistema no impone un límite máximo de boletos por transacción                                                                                                                                                                                                        |
+| Descripción           | El sistema permite al usuario seleccionar y procesar una cantidad arbitrariamente alta de boletos en una sola compra sin validar un límite máximo por transacción. Esto puede generar acaparamiento de entradas, afectar la disponibilidad para otros usuarios y comprometer la equidad del sistema.    |
+| Módulo                | Frontend / Checkout / Selección de boletos                                                                                                                                                                                                                                                             |
+| Pasos para reproducir | 1. Abrir `http://localhost:5173`. <br> 2. Navegar al catálogo de eventos. <br> 3. Seleccionar un evento disponible. <br> 4. Elegir una zona con boletos disponibles. <br> 5. Incrementar el contador de boletos a un número elevado (por ejemplo, 20, 50 o más). <br> 6. Proceder al checkout.         |
+| Datos de prueba       | Evento disponible. Zona: General o VIP. Cantidad a ingresar: 20 boletos.                                                                                                                                                                                                                               |
+| Resultado esperado    | El sistema debe mostrar un mensaje de validación indicando que se ha alcanzado el límite máximo de boletos permitidos por compra (por ejemplo, 4 o 10 según regla de negocio) e impedir continuar.                                                                                                     |
+| Resultado actual      | El sistema permite seleccionar cualquier cantidad de boletos sin mostrar una restricción por transacción.                                                                                                                                                                                               |
+| Evidencia             | Pendiente de captura en QA_EVIDENCE.md.                                                                                                                                                                                                                                                                |
+| Severidad             | High                                                                                                                                                                                                                                                                                                   |
+| Prioridad             | High                                                                                                                                                                                                                                                                                                   |
+| Entorno               | Local / Chrome / Windows                                                                                                                                                                                                                                                                               |
+| Versión               | Rama main del repositorio Stagefront                                                                                                                                                                                                                                                                   |
+| Asignado a            | Javier Marin                                                                                                                                                                                                                                                                                           |
+| Estado                | Open                                                                                                                                                                                                                                                                                                   |
+
+---
+
+# BUG-010 - No existe botón para regresar desde la sección de pago
+
+| Campo                 | Detalle                                                                                                                                                                                                                                                               |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID                    | BUG-010                                                                                                                                                                                                                                                               |
+| Título                | Checkout - Navegación - El usuario no puede regresar a la selección de boletos desde la pantalla de pago                                                                                                                                                              |
+| Descripción           | Durante el flujo de checkout, cuando el usuario llega a la pantalla de pago o confirmación, no existe un botón o enlace visible que le permita regresar a la etapa anterior de selección de boletos o zona. El usuario queda atrapado en el flujo sin opción de retorno clara dentro de la aplicación. |
+| Módulo                | Frontend / Checkout / Navegación                                                                                                                                                                                                                                      |
+| Pasos para reproducir | 1. Abrir `http://localhost:5173`. <br> 2. Seleccionar un evento. <br> 3. Elegir zona y cantidad de boletos. <br> 4. Avanzar hasta la pantalla de pago o confirmación. <br> 5. Intentar regresar a la selección usando los controles de la interfaz (no el botón del navegador). |
+| Datos de prueba       | Evento disponible. Zona: General. Cantidad: 2.                                                                                                                                                                                                                        |
+| Resultado esperado    | La pantalla de pago debe incluir un botón "Regresar" o "Volver" que permita al usuario volver a la etapa de selección sin perder su elección.                                                                                                                        |
+| Resultado actual      | No existe un botón de regreso visible. El usuario debe usar el botón "Atrás" del navegador, lo que puede causar pérdida del estado de la selección.                                                                                                                  |
+| Evidencia             | Pendiente de captura en QA_EVIDENCE.md.                                                                                                                                                                                                                               |
+| Severidad             | Medium                                                                                                                                                                                                                                                                |
+| Prioridad             | Medium                                                                                                                                                                                                                                                                |
+| Entorno               | Local / Chrome / Windows                                                                                                                                                                                                                                              |
+| Versión               | Rama main del repositorio Stagefront                                                                                                                                                                                                                                  |
+| Asignado a            | Edgar Castro                                                                                                                                                                                                                                                          |
+| Estado                | Open                                                                                                                                                                                                                                                                  |
+
+---
+
 ## Resumen de defectos
 
 | ID      | Módulo               | Severidad | Prioridad | Estado | Asignado a   |
 | ------- | -------------------- | --------- | --------- | ------ | ------------ |
-| BUG-001 | Checkout             | High      | High      | Open   | Javier Marin |
-| BUG-002 | Checkout/Pago        | High      | High      | Open   | Javier Marin |
-| BUG-003 | Formularios          | Medium    | High      | Open   | Edgar Castro |
-| BUG-004 | Checkout/Pago        | Medium    | High      | Open   | Javier Marin |
+| BUG-001 | Checkout                  | High      | High      | Open   | Javier Marin |
+| BUG-002 | Checkout/Pago             | High      | High      | Open   | Javier Marin |
+| BUG-003 | Formularios               | Medium    | High      | Open   | Edgar Castro |
+| BUG-004 | Checkout/Pago             | Medium    | High      | Open   | Javier Marin |
 | BUG-005 | Checkout/Pago        | High      | High      | Open   | Javier Marin |
 | BUG-006 | Checkout/Promociones | Low       | Medium    | Open   | Edgar Castro |
 | BUG-007 | Seguridad/Admin      | Critical  | Blocker   | Open   | Javier Marin |
 | BUG-008 | UX/Formularios       | Medium    | Medium    | Open   | Edgar Castro |
+| BUG-009 | Checkout/Boletos     | High      | High      | Open   | Javier Marin |
+| BUG-010 | Checkout/Navegación  | Medium    | Medium    | Open   | Edgar Castro |
 
 ---
 
@@ -248,14 +294,15 @@
 
 | Métrica                        | Resultado |
 | ------------------------------ | --------- |
-| Total de defectos documentados | 8         |
+| Total de defectos documentados | 10        |
 | Defectos Critical              | 1         |
-| Defectos High                  | 3         |
-| Defectos Medium                | 3         |
+| Defectos High                  | 4         |
+| Defectos Medium                | 4         |
 | Defectos Low                   | 1         |
 | Defectos con prioridad Blocker | 1         |
-| Defectos con prioridad High    | 4         |
-| Defectos abiertos              | 8         |
+| Defectos con prioridad High    | 5         |
+| Defectos con prioridad Medium  | 3         |
+| Defectos abiertos              | 10        |
 | Defectos cerrados              | 0         |
 
 ---

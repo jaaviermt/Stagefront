@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma.js";
 import { calculateOrderTotal } from "../services/orderService.js";
 import { canUserPurchase } from "../services/purchaseService.js";
 import { applyPromoCode } from "../services/promoService.js";
+import { logger } from "../lib/logger.js";
 import type { PromoCode } from "../types/index.js";
 
 const PROMO_CODES: PromoCode[] = [
@@ -34,6 +35,7 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
     }
 
     if (seat_ids.length === 0) {
+      logger.warn("order.rejected", { reason: "No seats selected", user_id, event_id });
       res.status(400).json({ error: "No seats selected or available" });
       return;
     }
@@ -51,6 +53,7 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
     ]);
 
     if (!user || !event) {
+      logger.warn("order.rejected", { reason: "User or event not found", user_id, event_id });
       res.status(404).json({ error: "User or event not found" });
       return;
     }
@@ -62,11 +65,17 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
     );
 
     if (!validation.allowed) {
+      logger.warn("order.rejected", { reason: validation.reason, user_id, event_id });
       res.status(400).json({ error: validation.reason });
       return;
     }
 
     if (seats.length !== seat_ids.length) {
+      logger.warn("order.rejected", {
+        reason: "One or more seats are unavailable",
+        user_id,
+        event_id,
+      });
       res.status(400).json({ error: "One or more seats are unavailable" });
       return;
     }
@@ -107,8 +116,19 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
       });
     });
 
+    logger.info("order.created", {
+      orderId: order.id,
+      userId: user_id,
+      eventId: event_id,
+      total,
+      seats: seat_ids.length,
+      promoCode: promo_code,
+    });
     res.status(201).json({ data: order });
-  } catch {
+  } catch (err) {
+    logger.error("order.create_failed", {
+      message: err instanceof Error ? err.message : String(err),
+    });
     res.status(500).json({ error: "Failed to create order" });
   }
 }

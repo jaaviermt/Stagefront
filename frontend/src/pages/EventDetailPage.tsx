@@ -243,6 +243,7 @@ const EventDetailPage: FC = () => {
                   return (
                     <button
                       key={zone.id}
+                      data-testid="zone-option"
                       disabled={soldOut}
                       onClick={() => {
                         setSelectedZone(zone);
@@ -429,6 +430,7 @@ const EventDetailPage: FC = () => {
                   </div>
                   <Link
                     to="/checkout"
+                    data-testid="checkout-cta"
                     state={{
                       zone: selectedZone,
                       quantity,

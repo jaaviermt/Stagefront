@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import type { EventStatus, OrderStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { isEventSoldOut } from "../services/eventService.js";
+import { logger } from "../lib/logger.js";
 
 export async function getAdminStats(_req: Request, res: Response): Promise<void> {
   try {
@@ -173,8 +174,16 @@ export async function createAdminEvent(req: Request, res: Response): Promise<voi
         status: (status as EventStatus) ?? "draft",
       },
     });
+    logger.info("admin.event.created", {
+      eventId: event.id,
+      title: event.title,
+      status: event.status,
+    });
     res.status(201).json({ data: event });
-  } catch {
+  } catch (err) {
+    logger.error("admin.event.create_failed", {
+      message: err instanceof Error ? err.message : String(err),
+    });
     res.status(500).json({ error: "Failed to create event" });
   }
 }
@@ -202,8 +211,13 @@ export async function updateAdminEvent(req: Request, res: Response): Promise<voi
     if (body.description !== undefined) data.description = body.description;
     if (body.image_url !== undefined) data.image_url = body.image_url;
     const event = await prisma.event.update({ where: { id }, data });
+    logger.info("admin.event.updated", { eventId: id, fields: Object.keys(data) });
     res.json({ data: event });
-  } catch {
+  } catch (err) {
+    logger.error("admin.event.update_failed", {
+      eventId: req.params.id,
+      message: err instanceof Error ? err.message : String(err),
+    });
     res.status(500).json({ error: "Failed to update event" });
   }
 }
@@ -217,8 +231,13 @@ export async function deleteAdminEvent(req: Request, res: Response): Promise<voi
     await prisma.seat.deleteMany({ where: { zone: { event_id: id } } });
     await prisma.zone.deleteMany({ where: { event_id: id } });
     await prisma.event.delete({ where: { id } });
+    logger.info("admin.event.deleted", { eventId: id });
     res.json({ data: { deleted: true } });
-  } catch {
+  } catch (err) {
+    logger.error("admin.event.delete_failed", {
+      eventId: req.params.id,
+      message: err instanceof Error ? err.message : String(err),
+    });
     res.status(500).json({ error: "Failed to delete event" });
   }
 }
@@ -231,8 +250,13 @@ export async function updateAdminOrder(req: Request, res: Response): Promise<voi
       where: { id },
       data: { status: status as OrderStatus },
     });
+    logger.info("admin.order.status_changed", { orderId: id, status });
     res.json({ data: order });
-  } catch {
+  } catch (err) {
+    logger.error("admin.order.update_failed", {
+      orderId: req.params.id,
+      message: err instanceof Error ? err.message : String(err),
+    });
     res.status(500).json({ error: "Failed to update order" });
   }
 }
@@ -242,8 +266,13 @@ export async function deleteAdminOrder(req: Request, res: Response): Promise<voi
     const { id } = req.params;
     await prisma.orderItem.deleteMany({ where: { order_id: id } });
     await prisma.order.delete({ where: { id } });
+    logger.info("admin.order.deleted", { orderId: id });
     res.json({ data: { deleted: true } });
-  } catch {
+  } catch (err) {
+    logger.error("admin.order.delete_failed", {
+      orderId: req.params.id,
+      message: err instanceof Error ? err.message : String(err),
+    });
     res.status(500).json({ error: "Failed to delete order" });
   }
 }

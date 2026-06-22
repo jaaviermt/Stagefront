@@ -310,15 +310,121 @@
 
 ---
 
+## TC-SEC-001 - Seguridad: acceso a endpoint admin sin autenticación (Broken Access Control)
+
+| Campo              | Detalle                                                                                                                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID                 | TC-SEC-001                                                                                                                                                                                                       |
+| Título             | Seguridad - Endpoints /admin accesibles sin token (A01 OWASP)                                                                                                                                                    |
+| Módulo             | API REST / Seguridad                                                                                                                                                                                             |
+| Responsable        | Javier Marin                                                                                                                                                                                                     |
+| Precondiciones     | Backend ejecutándose. Sin sesión ni token de administrador.                                                                                                                                                      |
+| Datos de entrada   | Método: GET. URL: http://localhost:3001/api/v1/admin/stats. Sin header Authorization.                                                                                                                            |
+| Pasos de ejecución | 1. Cerrar cualquier sesión. <br> 2. Enviar GET a `/api/v1/admin/stats` sin token. <br> 3. Revisar el código HTTP. <br> 4. Verificar si se devuelven datos sensibles. <br> 5. Documentar el comportamiento real. |
+| Resultado esperado | El endpoint debería responder 401/403 sin token. Hallazgo conocido (BUG): hoy responde 200 con datos; control de acceso solo en cliente.                                                                         |
+| Resultado real     | Pendiente de ejecución.                                                                                                                                                                                          |
+| Estado             | Not Executed                                                                                                                                                                                                     |
+| Severidad          | Critical                                                                                                                                                                                                         |
+| Prioridad          | High                                                                                                                                                                                                             |
+| Automatizado       | Sí                                                                                                                                                                                                               |
+| Referencia         | OWASP A01 Broken Access Control / SECURITY_REPORT.md                                                                                                                                                             |
+
+---
+
+## TC-SEC-002 - Seguridad: intento de NoSQL Injection en creación de reseña
+
+| Campo              | Detalle                                                                                                                                                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID                 | TC-SEC-002                                                                                                                                                                                                                     |
+| Título             | Seguridad - Payload con operadores Mongo en /reviews (A03 OWASP)                                                                                                                                                               |
+| Módulo             | API REST / MongoDB / Seguridad                                                                                                                                                                                                 |
+| Responsable        | Javier Marin                                                                                                                                                                                                                   |
+| Precondiciones     | Backend y MongoDB ejecutándose.                                                                                                                                                                                                |
+| Datos de entrada   | Método: POST. URL: `/api/v1/reviews`. Body: `{ "user_id": {"$ne": null}, "event_id": "evt-1", "rating": 5, "comment": "x" }`.                                                                                                  |
+| Pasos de ejecución | 1. Enviar POST a `/api/v1/reviews` con `user_id` como objeto `{$ne:null}`. <br> 2. Revisar código HTTP. <br> 3. Verificar que no se ejecute lógica no deseada. <br> 4. Confirmar que el valor se trate como dato, no operador. |
+| Resultado esperado | El sistema rechaza (400) o castea el campo a string; no permite inyección de operadores Mongo.                                                                                                                                 |
+| Resultado real     | Pendiente de ejecución.                                                                                                                                                                                                        |
+| Estado             | Not Executed                                                                                                                                                                                                                   |
+| Severidad          | High                                                                                                                                                                                                                           |
+| Prioridad          | High                                                                                                                                                                                                                           |
+| Automatizado       | Sí                                                                                                                                                                                                                             |
+| Referencia         | OWASP A03 Injection (NoSQL) / SECURITY_REPORT.md                                                                                                                                                                               |
+
+---
+
+## TC-INT-001 - Integración: crear orden válida end-to-end (API + PostgreSQL)
+
+| Campo              | Detalle                                                                                                                                                                                                                                                                            |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID                 | TC-INT-001                                                                                                                                                                                                                                                                          |
+| Título             | Integración - POST /orders crea orden, marca asientos y descuenta disponibilidad                                                                                                                                                                                                    |
+| Módulo             | API REST / Servicios / PostgreSQL                                                                                                                                                                                                                                                   |
+| Responsable        | Javier Marin                                                                                                                                                                                                                                                                        |
+| Precondiciones     | Backend + PostgreSQL con seed. Existe un evento con zona y asientos `available`.                                                                                                                                                                                                    |
+| Datos de entrada   | Método: POST. URL: `/api/v1/orders`. Body: `{ "user_id": "seed-user-demo", "event_id": "<id>", "zone_id": "<zona>", "quantity": 2 }`.                                                                                                                                               |
+| Pasos de ejecución | 1. Obtener un evento y una zona con asientos disponibles. <br> 2. Enviar POST a `/api/v1/orders`. <br> 3. Validar status 201 y `data.order_items.length === 2`. <br> 4. Consultar la zona y verificar `available_seats` decrementado. <br> 5. Verificar asientos en estado `sold`. |
+| Resultado esperado | Status 201; se crea la orden con 2 items, los asientos pasan a `sold` y `available_seats` baja en 2 (transacción atómica).                                                                                                                                                          |
+| Resultado real     | Pendiente de ejecución.                                                                                                                                                                                                                                                             |
+| Estado             | Not Executed                                                                                                                                                                                                                                                                        |
+| Severidad          | Critical                                                                                                                                                                                                                                                                            |
+| Prioridad          | High                                                                                                                                                                                                                                                                                |
+| Automatizado       | Sí                                                                                                                                                                                                                                                                                  |
+| Referencia         | RF-ORD-001 / backend/tests/integration                                                                                                                                                                                                                                              |
+
+---
+
+## TC-DB-001 - Base de datos: restricción UNIQUE en users.email
+
+| Campo              | Detalle                                                                                                                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID                 | TC-DB-001                                                                                                                                                                                                        |
+| Título             | Base de datos - Insertar dos usuarios con el mismo email viola UNIQUE                                                                                                                                            |
+| Módulo             | PostgreSQL / Prisma                                                                                                                                                                                              |
+| Responsable        | Javier Marin                                                                                                                                                                                                     |
+| Precondiciones     | PostgreSQL ejecutándose. Esquema Prisma aplicado (`prisma db push`).                                                                                                                                             |
+| Datos de entrada   | Dos `prisma.user.create` con el mismo `email` (ej. `dup@test.com`).                                                                                                                                              |
+| Pasos de ejecución | 1. Crear un usuario con `email = dup@test.com`. <br> 2. Intentar crear un segundo usuario con el mismo email. <br> 3. Capturar el error de Prisma. <br> 4. Verificar el código `P2002` (unique constraint).      |
+| Resultado esperado | La segunda inserción falla con error de restricción única (`P2002`); no se crea el registro duplicado.                                                                                                           |
+| Resultado real     | Pendiente de ejecución.                                                                                                                                                                                          |
+| Estado             | Not Executed                                                                                                                                                                                                     |
+| Severidad          | High                                                                                                                                                                                                             |
+| Prioridad          | Medium                                                                                                                                                                                                           |
+| Automatizado       | Sí                                                                                                                                                                                                               |
+| Referencia         | Esquema `users` / backend/tests/database/prisma.db.test.ts                                                                                                                                                       |
+
+---
+
+## TC-DB-002 - Base de datos: rollback transaccional al fallar la creación de orden
+
+| Campo              | Detalle                                                                                                                                                                                                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID                 | TC-DB-002                                                                                                                                                                                                                                            |
+| Título             | Base de datos - Una transacción de orden que falla no deja asientos en `sold`                                                                                                                                                                        |
+| Módulo             | PostgreSQL / Prisma (transacciones)                                                                                                                                                                                                                  |
+| Responsable        | Javier Marin                                                                                                                                                                                                                                         |
+| Precondiciones     | PostgreSQL con seed. Asientos `available` en una zona.                                                                                                                                                                                                |
+| Datos de entrada   | `prisma.$transaction` que actualiza asientos a `sold` y luego lanza un error forzado antes de confirmar.                                                                                                                                              |
+| Pasos de ejecución | 1. Capturar el estado inicial de los asientos. <br> 2. Ejecutar una transacción que marca asientos `sold` y luego arroja un error. <br> 3. Atrapar la excepción. <br> 4. Volver a consultar los asientos. <br> 5. Verificar que siguen `available`. |
+| Resultado esperado | El error revierte toda la transacción: los asientos permanecen `available` y `available_seats` no cambia.                                                                                                                                            |
+| Resultado real     | Pendiente de ejecución.                                                                                                                                                                                                                              |
+| Estado             | Not Executed                                                                                                                                                                                                                                         |
+| Severidad          | Critical                                                                                                                                                                                                                                             |
+| Prioridad          | High                                                                                                                                                                                                                                                 |
+| Automatizado       | Sí                                                                                                                                                                                                                                                   |
+| Referencia         | Atomicidad de `createOrder` / backend/tests/database                                                                                                                                                                                                 |
+
+---
+
 ## Resumen de cobertura de casos
 
 | Capa         | Casos relacionados                                                                 |
 | ------------ | ---------------------------------------------------------------------------------- |
 | Frontend     | TC-UI-001, TC-UI-002, TC-UI-003, TC-UI-004, TC-UI-005, TC-UI-006                   |
 | API REST     | TC-API-001, TC-API-002, TC-API-003, TC-API-004, TC-API-005, TC-API-006, TC-API-007 |
-| PostgreSQL   | TC-API-001, TC-API-002, TC-API-004, TC-E2E-001                                     |
-| MongoDB      | TC-API-006                                                                         |
-| Seguridad    | TC-UI-003, TC-UI-004                                                               |
+| Integración  | TC-INT-001                                                                         |
+| PostgreSQL / BD | TC-DB-001, TC-DB-002, TC-INT-001, TC-API-001, TC-API-002, TC-API-004, TC-E2E-001 |
+| MongoDB      | TC-API-006, TC-SEC-002                                                             |
+| Seguridad    | TC-SEC-001, TC-SEC-002, TC-UI-003, TC-UI-004                                       |
 | Validaciones | TC-API-005, TC-API-007, TC-UI-005, TC-UI-006                                       |
 | End-to-End   | TC-E2E-001                                                                         |
 
@@ -328,10 +434,13 @@
 
 | Métrica                         | Resultado    |
 | ------------------------------- | ------------ |
-| Total de casos documentados     | 14           |
+| Total de casos documentados     | 19           |
 | Casos API                       | 7            |
 | Casos UI                        | 6            |
+| Casos Seguridad                 | 2            |
+| Casos Integración               | 1            |
+| Casos Base de datos             | 2            |
 | Casos E2E                       | 1            |
-| Casos automatizados             | 6            |
+| Casos automatizados             | 11           |
 | Casos pendientes de automatizar | 8            |
 | Estado inicial                  | Not Executed |
