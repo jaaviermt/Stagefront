@@ -17,7 +17,7 @@ import {
   deleteAdminOrder,
 } from "../controllers/adminController.js";
 import { getLogs, getLogStats } from "../controllers/logsController.js";
-import { authLimiter } from "../app.js";
+import { authLimiter } from "../middleware/rateLimiter.js";
 
 const router = Router();
 

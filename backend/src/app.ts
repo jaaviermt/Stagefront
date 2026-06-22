@@ -1,32 +1,15 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
 import path from "path";
 import { fileURLToPath } from "url";
 import router from "./routes/index.js";
 import { correlationId } from "./middleware/correlationId.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { notFoundHandler, errorHandler } from "./middleware/errorHandler.js";
+import { globalLimiter } from "./middleware/rateLimiter.js";
 
 const isProd = process.env.NODE_ENV === "production";
-
-// A01/A05 OWASP — rate limit global (protección DoS básica)
-const globalLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 120,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// A07 OWASP — rate limit estricto en rutas de autenticación (máx 5/min por IP)
-export const authLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,
-  message: { error: "Too many login attempts, please try again later." },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 
 /**
  * Builds the Express application without starting the HTTP server or opening
