@@ -1,0 +1,15 @@
+{
+  "name": "stagefront-quality",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cypress E2E orchestration for StageFront",
+  "type": "module",
+  "scripts": {
+    "test:e2e": "cypress run",
+    "test:e2e:open": "cypress open"
+  },
+  "devDependencies": {
+    "cypress": "^15.17.0",
+    "typescript": "^6.0.3"
+  }
+}

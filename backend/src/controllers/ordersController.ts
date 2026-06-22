@@ -121,7 +121,7 @@ export async function getUserOrders(req: Request, res: Response): Promise<void> 
       orderBy: { created_at: "desc" },
     });
     res.json({ data: orders });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: "Failed to fetch orders" });
   }
 }

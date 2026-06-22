@@ -36,7 +36,7 @@ export async function createResale(req: Request, res: Response): Promise<void> {
   }
 }
 
-export async function listResales(req: Request, res: Response): Promise<void> {
+export async function listResales(_req: Request, res: Response): Promise<void> {
   try {
     const resales = await prisma.resale.findMany({
       where: { status: "active" },

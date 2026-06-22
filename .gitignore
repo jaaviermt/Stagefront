@@ -1,11 +1,47 @@
+# Dependencies
 node_modules/
+
+# Builds / output
 dist/
+build/
+*.tsbuildinfo
+
+# Env / secrets
 .env
 *.local
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Caches
+.cache/
+.vite/
+.eslintcache
+
+# Project prompt/instruction docs (no van al repo)
 CLAUDE.md
 .claude/
 BUGS.md
 LOGGING.md
+instrucciones.md
 
-
+# Test & quality artifacts
+coverage/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+playwright-report/
+test-results/

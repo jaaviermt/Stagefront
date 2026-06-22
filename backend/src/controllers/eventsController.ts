@@ -25,7 +25,7 @@ export async function listEvents(req: Request, res: Response): Promise<void> {
       : events;
 
     res.json({ data: result });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: "Failed to fetch events" });
   }
 }
@@ -47,7 +47,7 @@ export async function getEvent(req: Request, res: Response): Promise<void> {
     );
 
     res.json({ data: { ...event, soldOut } });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: "Failed to fetch event" });
   }
 }
