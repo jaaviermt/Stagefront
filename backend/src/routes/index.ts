@@ -17,6 +17,7 @@ import {
   deleteAdminOrder,
 } from "../controllers/adminController.js";
 import { getLogs, getLogStats } from "../controllers/logsController.js";
+import { authLimiter } from "../app.js";
 
 const router = Router();
 
@@ -28,13 +29,13 @@ router.get("/events", listEvents);
 router.get("/events/:id", getEvent);
 router.post("/events", createEvent);
 
-// Orders
-router.post("/orders", createOrder);
+// Orders — authLimiter: A07 OWASP (máx 5 transacciones críticas/min por IP)
+router.post("/orders", authLimiter, createOrder);
 router.get("/users/:userId/orders", getUserOrders);
 
-// Resales
+// Resales — authLimiter en escritura
 router.get("/resales", listResales);
-router.post("/resales", createResale);
+router.post("/resales", authLimiter, createResale);
 
 // Reviews (MongoDB)
 router.get("/events/:eventId/reviews", getEventReviews);

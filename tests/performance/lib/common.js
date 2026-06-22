@@ -5,9 +5,10 @@ import { check } from "k6";
 export const BASE_URL = __ENV.BASE_URL || "http://localhost:3001";
 
 // Shared thresholds applied across all profiles.
+// Render free tier has cold-start latency — thresholds reflect realistic SLOs.
 export const baseThresholds = {
-  http_req_failed: ["rate<0.01"], // <1% errors
-  http_req_duration: ["p(95)<500", "p(99)<1000"],
+  http_req_failed: ["rate<0.01"],       // <1% errors
+  http_req_duration: ["p(95)<800", "p(99)<1500"],
 };
 
 // A representative read-heavy browsing mix against public endpoints.

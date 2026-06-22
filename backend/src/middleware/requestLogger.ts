@@ -1,11 +1,9 @@
 import morgan, { type StreamOptions } from "morgan";
-import type { RequestHandler } from "express";
+import type { Request, RequestHandler } from "express";
 import { logger } from "../lib/logger.js";
 
-/**
- * HTTP request logger: Morgan pipes one structured line per request into
- * Winston at the `http` level (method, url, status, response time).
- */
+morgan.token("correlationId", (req: Request) => req.correlationId ?? "-");
+
 const stream: StreamOptions = {
   write: (message: string) => {
     const trimmed = message.trim();
@@ -17,8 +15,9 @@ const stream: StreamOptions = {
   },
 };
 
-// Emit JSON tokens so the dashboard can parse method/url/status/responseTime.
+// Structured JSON log line includes correlationId for end-to-end traceability.
 const format = JSON.stringify({
+  correlationId: ":correlationId",
   method: ":method",
   url: ":url",
   status: ":status",

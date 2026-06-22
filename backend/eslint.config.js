@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import globals from "globals";
+import prettierConfig from "eslint-config-prettier";
 
 export default tseslint.config(
   { ignores: ["dist", "node_modules", "coverage", "prisma/seed.ts"] },
@@ -31,5 +32,7 @@ export default tseslint.config(
     rules: {
       "@typescript-eslint/no-non-null-assertion": "off",
     },
-  }
+  },
+  // Prettier last — disables ESLint rules that conflict with formatting
+  prettierConfig
 );
