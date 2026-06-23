@@ -32,7 +32,8 @@ export function createApp(): Express {
     })
   );
 
-  app.use(globalLimiter);
+  // A07 OWASP — rate limiting solo en producción (en dev/test interfiere con k6)
+  if (isProd) app.use(globalLimiter);
   app.use(express.json());
 
   // Correlation ID para trazabilidad end-to-end (Sec. 11.1)
